@@ -205,3 +205,55 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ============================
+# 📦 Java / Spring Boot
+# ============================
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+target/
+.idea/
+*.log
+*.bak
+
+# Spring specific
+.spring-*
+hs_err_pid*
+!src/main/resources/static/       # giữ lại static nếu bạn cần phục vụ frontend từ Spring
+!src/main/resources/application.yml
+!src/main/resources/application.properties
+
+# Gradle
+.gradle/
+build/
+
+# Maven
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# ============================
+# ⚛️ ReactJS / Node
+# ============================
+node_modules/
+build/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env.local
+.env.development
+.env.test
+.env.production
+.vite/
+.next/
+.cache/
+*.log
+coverage/
+

@@ -159,6 +159,10 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Thêm vào .gitignore
+credentials.json
+*.json  # Nếu muốn loại bỏ tất cả tệp JSON
+
 # Pyre type checker
 .pyre/
 

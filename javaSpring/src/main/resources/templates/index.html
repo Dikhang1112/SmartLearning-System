@@ -1,0 +1,62 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Home</title>
+    <th:block th:replace="base :: bootstrap"></th:block>
+</head>
+<body>
+    <div th:replace="base :: header"></div>
+    <main class="container my-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form th:action="@{/}" method="get">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="kw" placeholder="Người dùng tìm kiếm ..." />
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-flex flex-column gap-2">
+                                <button class="btn btn-primary w-100" type="submit">
+                                    <i class="bi bi-search me-1"></i> Tìm kiếm
+                                </button>
+                                <a th:href="@{/subjects}" class="btn btn-dark w-100">
+                                    <i class="bi bi-plus-circle me-1"></i> Thêm môn học
+                                </a>
+                            </div>
+                        </div>     
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên môn học</th>
+                        <th> Mô tả môn học</th>
+                        <th>Giáo viên đảm nhiệm</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${subjects}">
+                        <td th:text="${s.id}"></td>
+                        <td th:text="${s.title}"></td>
+                        <td th:text = "${s.description} "> </td>
+                        <td>
+                            <a th:href="@{'/job_postings/' + ${j.id}}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <button th:onclick="'deleteJob(\'' + @{/api/job_postings/} + '\', ' + ${j.id} + ')'" class="btn btn-danger">Xóa</button>         
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <div th:replace="base :: footer"></div>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

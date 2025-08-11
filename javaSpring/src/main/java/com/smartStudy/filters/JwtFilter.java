@@ -30,8 +30,6 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        System.out.println("====== JwtFilter: Processing URL: " + uri);
-
         String header = request.getHeader("Authorization");
         if (header == null) {
             header = request.getHeader("authorization"); // fallback (trường hợp proxy biến đổi)

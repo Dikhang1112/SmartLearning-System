@@ -61,8 +61,11 @@
     Incorrect email or password
   </span>
         </div>
-
-
+        <!-- Thông báo không phải admin -->
+        <div th:if="${param.not_admin}" class="alert alert-danger d-flex align-items-center mt-3">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span>You aren't Admin</span>
+        </div>
         <form th:action="@{/login}" method="post">
             <div class="form-floating">
                 <input
@@ -96,7 +99,7 @@
 </div>
 
 <!-- Bootstrap JS bundle -->
-<script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>\
+<script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/login.js}"></script>
 
 </body>

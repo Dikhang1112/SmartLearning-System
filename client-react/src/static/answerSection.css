@@ -1,0 +1,67 @@
+/* Inline answers as selectable chips */
+.ans-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ans-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.ans-chip:hover {
+    background: #f8fafc;
+    border-color: #c7d2fe;
+}
+
+.ans-chip.selected {
+    border-color: #6366f1;
+    background: #eef2ff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+}
+
+.ans-chip.correct {
+    background: #ecfdf5;
+    border-color: #86efac;
+}
+
+.ans-letter {
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    font-weight: 700;
+    border-radius: 8px;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #4338ca;
+}
+
+.ans-chip.correct .ans-letter {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #166534;
+}
+
+.ans-text {
+    color: #111827;
+}
+
+.ans-skeleton,
+.ans-empty,
+.ans-error {
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* Khi hiển thị dưới câu hỏi, thêm khoảng đệm nhỏ */
+.ans-inline.ex-answers-under {
+    margin-top: 4px;
+}

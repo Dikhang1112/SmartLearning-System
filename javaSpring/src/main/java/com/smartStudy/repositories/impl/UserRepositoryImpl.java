@@ -1,6 +1,6 @@
 package com.smartStudy.repositories.impl;
 
-import com.smartStudy.pojo.Users;
+import com.smartStudy.pojo.User;
 import com.smartStudy.repositories.UserRepository;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
@@ -30,50 +30,47 @@ public class UserRepositoryImpl implements UserRepository {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public List<Users> getUsers(Map<String, String> params) {
+    public List<User> getUsers(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Users> q = b.createQuery(Users.class);
-        Root root = q.from(Users.class);
+        CriteriaQuery<User> q = b.createQuery(User.class);
+        Root root = q.from(User.class);
         q.select(root);
         if (params != null) {
             List<Predicate> predicates = new ArrayList<>();
-            String kw = params.get("kw");
-            if (kw != null && !kw.isEmpty()) {
-                predicates.add(b.like(root.get("name"), String.format("%%%s%%", kw)));
+            String email = params.get("email");
+            if (email != null && !email.isEmpty()) {
+                predicates.add(b.like(root.get("email"), String.format("%%%s%%", email)));
             }
             String role = params.get("role");
             if (role != null && !role.isEmpty()) {
                 predicates.add(b.like(root.get("role"), String.format("%%%s%%", role)));
             }
             q.where(predicates.toArray(Predicate[]::new));
-            String orderBy = params.get("orderBy");
-            if (orderBy != null && !orderBy.isEmpty()) {
-                q.orderBy(b.asc(root.get(orderBy)));
-            }
         }
         Query query = s.createQuery(q);
         if (params != null && params.containsKey("page")) {
             int page = Integer.parseInt(params.get("page"));
-            int start = (page - 1) * PAGE_SIZE;
+            int start = page  * PAGE_SIZE;
             query.setMaxResults(PAGE_SIZE);
             query.setFirstResult(start);
         }
-        return query.getResultList();    }
-
-    @Override
-    public Users getUserById(int id) {
-        Session s = this.factory.getObject().getCurrentSession();
-        return s.get(Users.class,id);
+        return query.getResultList();
     }
 
     @Override
-    public Users getUserByMail(String email) {
+    public User getUserById(int id) {
         Session s = this.factory.getObject().getCurrentSession();
-        Query q = s.createNamedQuery("Users.findByEmail", Users.class);
+        return s.get(User.class,id);
+    }
+
+    @Override
+    public User getUserByMail(String email) {
+        Session s = this.factory.getObject().getCurrentSession();
+        Query q = s.createNamedQuery("User.findByEmail", User.class);
         q.setParameter("email", email);
         try {
-            return (Users) q.getSingleResult();
+            return (User) q.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         } catch (Exception ex) {
@@ -83,7 +80,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Users addOrUpdate(Users u) {
+    public void deleteUser(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        User u = this.getUserById(id);
+        s.remove(u);
+    }
+
+    @Override
+    public User updateUser(User u) {
         Session s = this.factory.getObject().getCurrentSession();
         if (u.getId() == null) {
             s.persist(u);
@@ -95,7 +99,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean authenticate(String email, String password) {
-        Users u = this.getUserByMail(email);
+        User u = this.getUserByMail(email);
         return  this.passwordEncoder.matches(password,u.getPassword());
     }
 }

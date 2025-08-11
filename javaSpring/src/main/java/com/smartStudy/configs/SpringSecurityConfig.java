@@ -28,8 +28,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 @Configuration
 @EnableWebSecurity
 @EnableTransactionManagement
-@ComponentScan(basePackages = { "com.smartStudy"
-})
+@ComponentScan(basePackages = {"com.smartStudy"})
 public class SpringSecurityConfig {
 
     @Autowired
@@ -51,27 +50,44 @@ public class SpringSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
-            Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(c -> c.disable()).authorizeHttpRequests(requests
-                        -> requests.requestMatchers("/").authenticated()
-                        .anyRequest().permitAll())
-                .formLogin(form -> form.loginPage("/login")
+                .csrf(c -> c.disable())
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/login").permitAll() // cho phép trang login, static
+                        .requestMatchers("/javaSpring").hasRole("ADMIN") // chỉ ADMIN mới vào được trang "/"
+                        .requestMatchers("/").hasRole("ADMIN")
+                        .anyRequest().permitAll()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true").permitAll())
+                        .successHandler((request, response, authentication) -> {
+                            boolean isAdmin = authentication.getAuthorities().stream()
+                                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                            if (!isAdmin) {
+                                request.getSession().invalidate();
+                                response.sendRedirect("/login?not_admin=true");
+                            } else {
+                                response.sendRedirect("/javaSpring");
+                            }
+                        })
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+
                 .logout(logout -> logout.logoutSuccessUrl("/login").permitAll());
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
+
     @Bean
     public Cloudinary cloudinary() {
         Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", "dxymsdvsz",
-                "api_key", "216696381565245",
-                "api_secret", "hsazyGO01a_702eZ9inRx8skrWA",
+                "cloud_name", "dao8z029z",
+                "api_key", "578729133429546",
+                "api_secret", "z5jUlCRkqI9naihYnlljFWGh09s",
                 "secure", true));
         return cloudinary;
     }
@@ -91,10 +107,8 @@ public class SpringSecurityConfig {
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 

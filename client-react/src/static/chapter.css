@@ -1,0 +1,130 @@
+.chapter-main {
+    padding: 32px;
+    min-height: 100vh;
+    background: #eef0f2;
+}
+
+.chapter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    background: #daeef7;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(30, 55, 110, 0.08);
+    padding: 36px 38px;
+    gap: 44px;
+}
+
+.chapter-header-left {
+    flex: 1;
+}
+
+.chapter-title {
+    margin: 0;
+    margin-left: 50px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1454d4;
+}
+
+.chapter-desc {
+    margin-top: 16px;
+    margin-left: 50px;
+    color: #444;
+    font-size: 1.12rem;
+    font-weight: 500;
+}
+
+.chapter-header-img {
+    min-width: 180px;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chapter-header-img img {
+    width: 240px;
+    height: 220px;
+    margin-right: 80px;
+    border-radius: 22px;
+    object-fit: cover;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.chapter-section-title {
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-size: 1.33rem;
+    color: #2e4157;
+}
+
+/* Card List & Card Item */
+.chapter-list {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.chapter-card {
+    display: flex;
+    width: 65%;
+    align-items: center;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(30, 55, 110, 0.08);
+    padding: 22px 32px 22px 24px;
+    transition: box-shadow 0.15s, border-color 0.18s;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+}
+
+.chapter-card:hover {
+    border-color: #4cc7fa;
+    box-shadow: 0 8px 32px rgba(30, 55, 110, 0.16);
+    background: #f8fcff;
+}
+
+.chapter-indexbox {
+    background: #f3fbff;
+    min-width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 21px;
+    color: #00b7ff;
+    margin-right: 28px;
+    border: 1.5px solid #c8ecfa;
+}
+
+.chapter-lesson-text {
+    font-size: 12px;
+    font-weight: 400;
+    color: #37bc9b;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+}
+
+.chapter-info {
+    flex: 1;
+}
+
+.chapter-card-title {
+    font-size: 1.19rem;
+    font-weight: 600;
+    color: #2e4157;
+    margin-bottom: 4px;
+}
+
+.chapter-empty {
+    color: #777;
+    font-style: italic;
+    padding: 10px 0 10px 4px;
+}

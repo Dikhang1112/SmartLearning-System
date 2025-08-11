@@ -28,5 +28,20 @@
     <class>com.smartStudy.pojo.McqResponses</class>
     <class>com.smartStudy.pojo.Subjects</class>
     <class>com.smartStudy.pojo.Exercises</class>
+    <class>com.smartStudy.pojo.Students</class>
+    <class>com.smartStudy.pojo.Teachers</class>
+    <class>com.smartStudy.pojo.ChapterAttachment</class>
+    <class>com.smartStudy.pojo.Teacher</class>
+    <class>com.smartStudy.pojo.McqResponse</class>
+    <class>com.smartStudy.pojo.Subject</class>
+    <class>com.smartStudy.pojo.Exercise</class>
+    <class>com.smartStudy.pojo.ExerciseAnswer</class>
+    <class>com.smartStudy.pojo.Chapter</class>
+    <class>com.smartStudy.pojo.User</class>
+    <class>com.smartStudy.pojo.ExerciseSubmission</class>
+    <class>com.smartStudy.pojo.Student</class>
+    <class>com.smartStudy.pojo.ExerciseQuestion</class>
+    <class>com.smartStudy.pojo.Note</class>
+    <class>com.smartStudy.pojo.Class</class>
   </persistence-unit>
 </persistence>

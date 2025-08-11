@@ -51,10 +51,10 @@ public class ChapterProgress implements Serializable {
     private Date updatedAt;
     @JoinColumn(name = "chapter_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
-    private Chapters chapterId;
+    private Chapter chapterId;
     @JoinColumn(name = "student_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
-    private Users studentId;
+    private User studentId;
 
     public ChapterProgress() {
     }
@@ -95,19 +95,19 @@ public class ChapterProgress implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public Chapters getChapterId() {
+    public Chapter getChapterId() {
         return chapterId;
     }
 
-    public void setChapterId(Chapters chapterId) {
+    public void setChapterId(Chapter chapterId) {
         this.chapterId = chapterId;
     }
 
-    public Users getStudentId() {
+    public User getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(Users studentId) {
+    public void setStudentId(User studentId) {
         this.studentId = studentId;
     }
 

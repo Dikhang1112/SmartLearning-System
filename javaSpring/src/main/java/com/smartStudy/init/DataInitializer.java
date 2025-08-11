@@ -1,6 +1,6 @@
 package com.smartStudy.init;
 
-import com.smartStudy.pojo.Users;
+import com.smartStudy.pojo.User;
 import com.smartStudy.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -36,12 +36,12 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
                 .isPresent();
 
         if (!exists) {
-            Users admin = new Users();
+            User admin = new User();
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode("123456"));
             admin.setName("Administrator");
             admin.setRole("admin");
-            userService.addOrUpdate(admin);
+            userService.addUpdateUser(admin);
             System.out.println("==> [DataInitializer] Tạo user admin: " + adminEmail);
         } else {
             System.out.println("==> [DataInitializer] User admin đã tồn tại, không tạo lại.");

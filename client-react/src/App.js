@@ -1,25 +1,82 @@
-import logo from './logo.svg';
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useReducer, useEffect } from 'react';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { CookiesProvider } from 'react-cookie';
+import Header from './components/layouts/Header';
+import Welcome from './components/layouts/Welcome';
+import Sidebar from './components/layouts/Sidebar';
+import MyUserReducer, { MyUserContext, MyUserDispatchContext } from './reducers/MyUserReducer';
+import { SidebarProvider } from './reducers/SidebarContext';
+import StudentDashboard from './components/StudentDashboard';
+import TeacherDashboard from './components/TeacherDashboard';
+import ChapterSection from './components/ChapterSection';
+import Chapter from './components/Chapter';
+import { endpoints, authApis } from './configs/Apis';
+import cookie from 'react-cookies';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
+  const [user, dispatch] = useReducer(MyUserReducer, null);
+  useEffect(() => {
+    const init = async () => {
+      let token = localStorage.getItem("token") || cookie.load("token");
+      if (token) {
+        try {
+          const res = await authApis().get(endpoints.auth);
+          const currentUser = {
+            id: res.data.id,
+            token: token,
+            email: res.data.email,
+            name: res.data.name,
+            role: res.data.role,
+            avatar: res.data.avatar
+          }
+          dispatch({
+            type: "login",
+            payload: currentUser
+          });
+        } catch (err) {
+          console.error("Token lỗi hoặc hết hạn:", err);
+          localStorage.removeItem("token");
+          cookie.remove("token");
+        }
+      }
+    };
+    init();
+  }, []); // ĐỂ MẢNG RỖNG
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <MyUserContext.Provider value={user}>
+      <CookiesProvider>
+        <MyUserDispatchContext.Provider value={dispatch}>
+          <SidebarProvider>
+            <BrowserRouter>
+              <Header />
+              <Sidebar />
+              <Routes>
+                <Route path="/" element={<Welcome />} />
+                <Route path="/studentDashBoard/" element={<StudentDashboard />} />
+                <Route path="/teacherDashBoard/" element={<TeacherDashboard />} />
+                <Route path="/chapters/:subjectId" element={<Chapter />} />
+                <Route path="/chapters/:subjectId/section/:chapterId" element={<ChapterSection />} />
+              </Routes>
+              <ToastContainer // Toast toàn cục
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={true}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+              />
+            </BrowserRouter>
+          </SidebarProvider>
+        </MyUserDispatchContext.Provider>
+      </CookiesProvider>
+    </MyUserContext.Provider>
   );
 }
-
 export default App;

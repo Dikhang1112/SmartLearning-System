@@ -39,6 +39,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
         registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
         registry.addResourceHandler("/images/**").addResourceLocations("classpath:/static/images/");
+
     }
 
     @Bean

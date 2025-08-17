@@ -22,7 +22,6 @@ public class ApiQuestionController {
     private QuestionService questionService;
 
 
-
     @GetMapping("/questions")
     public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
         List<ExerciseQuestion> items = questionService.getQuestions(params);
@@ -48,7 +47,7 @@ public class ApiQuestionController {
 
     @GetMapping("/questions/exercise/{exerciseId}")
     public ResponseEntity<?> listByExercise(
-            @PathVariable (value = "exerciseId") Integer exerciseId,
+            @PathVariable(value = "exerciseId") Integer exerciseId,
             @RequestParam Map<String, String> params) {
 
         // ép exerciseId từ path vào params để tái dùng repository/service hiện có
@@ -69,37 +68,40 @@ public class ApiQuestionController {
         if (params.containsKey("page")) payload.put("page", params.get("page"));
         if (params.containsKey("size")) payload.put("size", params.get("size"));
         if (params.containsKey("sort")) payload.put("sort", params.get("sort"));
-        if (params.containsKey("dir"))  payload.put("dir",  params.get("dir"));
+        if (params.containsKey("dir")) payload.put("dir", params.get("dir"));
 
         return ResponseEntity.ok(payload);
     }
 
 
     // POST /api/questions
+    // POST /api/questions?exerciseId=...
     @PostMapping("/questions")
-    public ResponseEntity<?> create(@RequestBody QuestionUpsertDTO req) {
-        if (req.getExerciseId() == null || req.getOrderIndex() == null || req.getQuestion() == null) {
-            return ResponseEntity.badRequest().body("exerciseId, orderIndex, question are required");
+    public ResponseEntity<?> create(@RequestBody QuestionUpsertDTO req,
+                                    @RequestParam Integer exerciseId) {
+        if (/* req.getExerciseId() == null || */ req.getOrderIndex() == null || req.getQuestion() == null) {
+            return ResponseEntity.badRequest().body("orderIndex, question are required");
         }
         ExerciseQuestion q = new ExerciseQuestion();
         q.setOrderIndex(req.getOrderIndex());
         q.setQuestion(req.getQuestion());
         q.setSolution(req.getSolution());
-
-        ExerciseQuestion created = questionService.create(q, req.getExerciseId());
+        ExerciseQuestion created = questionService.create(q, exerciseId);
         if (created == null) return ResponseEntity.badRequest().body("Invalid exerciseId");
         return ResponseEntity.ok(toDto(created));
     }
 
+
     // PUT /api/questions/{id}
     @PutMapping("/questions/{questionId}")
-    public ResponseEntity<?> update(@PathVariable(value = "questionId") Integer id, @RequestBody QuestionUpsertDTO req) {
+    public ResponseEntity<?> update(@PathVariable(value = "questionId") Integer id, @RequestBody QuestionUpsertDTO req,
+                                    @RequestParam Integer exerciseId) {
         ExerciseQuestion patch = new ExerciseQuestion();
         if (req.getOrderIndex() != null) patch.setOrderIndex(req.getOrderIndex());
         if (req.getQuestion() != null) patch.setQuestion(req.getQuestion());
         if (req.getSolution() != null) patch.setSolution(req.getSolution());
 
-        ExerciseQuestion updated = questionService.update(id, patch, req.getExerciseId());
+        ExerciseQuestion updated = questionService.update(id, patch, exerciseId);
         if (updated == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(toDto(updated));
     }

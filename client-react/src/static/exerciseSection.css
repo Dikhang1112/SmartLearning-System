@@ -193,4 +193,181 @@
     margin-left: 30px;
 }
 
+.ex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ex-add-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.ex-add-btn:hover {
+    background: #f8fafc;
+}
+
+.ex-item {
+    position: relative;
+}
+
+.ex-actions {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+    /* khoảng cách giữa 2 nút */
+    align-items: center;
+}
+
+.ex-icon-btn {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .05s ease;
+}
+
+.ex-icon-btn:hover {
+    background: #629fdb;
+    border-color: #629fdb;
+}
+
+.ex-icon-btn.danger {
+    margin-right: 55px;
+}
+
+.ex-icon-btn.danger:hover {
+    background: #d67878;
+    border-color: #cd4949;
+}
+
+
+.ex-icon-btn:active {
+    transform: translateY(1px);
+}
+
+
 /* lệch theo số thứ tự; chỉnh tùy ý trên UI */
+.ex-qactions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.ex-qheader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* ===== Nhóm theo loại bài tập ===== */
+.ex-group {
+    margin-top: 16px;
+}
+
+.ex-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 6px;
+}
+
+.ex-group-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.ex-group-badge {
+    margin-left: auto;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+/* đã có ex-type-mcq / ex-type-essay ở trên, tận dụng palette đó */
+.ex-group-badge.ex-type-mcq {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+}
+
+.ex-group-badge.ex-type-essay {
+    background: #ecfeff;
+    border-color: #a5f3fc;
+}
+
+/* ===== Thanh Nộp bài cho student ===== */
+.ex-submit-bar {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px dashed #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ex-submit-btn {
+    border: 1px solid #6366f1;
+    background: #6366f1;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.ex-submit-btn:hover {
+    background: #4f46e5;
+    border-color: #4f46e5;
+}
+
+/* ===== ESSAY answer form (Student) ===== */
+.ex-essay-form {
+    margin: 10px 0 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ex-essay-label {
+    font-weight: 600;
+    color: #111827;
+}
+
+.ex-essay-input {
+    width: 600%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ex-essay-input:focus {
+    outline: 3px solid #c7d2fe;
+    /* indigo-200 */
+    outline-offset: 2px;
+    border-color: #6366f1;
+    /* indigo-500 */
+}

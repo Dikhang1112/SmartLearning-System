@@ -8,19 +8,24 @@ import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 public class ChapterServiceImpl implements ChapterService {
     @Autowired
     private ChapterRepository chapterRepository;
-    private LocalSessionFactoryBean fatory;
+
+    @Autowired
+    private LocalSessionFactoryBean factory;
+
 
     private Session session()
     {
-        return this.fatory.getObject().getCurrentSession();
+        return this.factory.getObject().getCurrentSession();
     }
 
     @Override

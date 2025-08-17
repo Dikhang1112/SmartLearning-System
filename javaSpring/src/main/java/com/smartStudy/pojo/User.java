@@ -37,6 +37,8 @@ public class User implements Serializable {
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
+    // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
+    // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
@@ -96,10 +98,6 @@ public class User implements Serializable {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     @JsonIgnore
     private Teacher teacher;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
-    @JsonIgnore
-    private List<ExerciseSubmission> exerciseSubmissionList;
-
     public User() {
     }
 
@@ -123,14 +121,6 @@ public class User implements Serializable {
         this.id = id;
     }
 
-
-    public String getResetToken() {
-        return resetToken;
-    }
-
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
-    }
 
     public Date getResetExpiresAt() {
         return resetExpiresAt;
@@ -188,13 +178,6 @@ public class User implements Serializable {
         this.teacher = teacher;
     }
 
-    public List<ExerciseSubmission> getExerciseSubmissionList() {
-        return exerciseSubmissionList;
-    }
-
-    public void setExerciseSubmissionList(List<ExerciseSubmission> exerciseSubmissionList) {
-        this.exerciseSubmissionList = exerciseSubmissionList;
-    }
 
     @Override
     public int hashCode() {
@@ -267,6 +250,14 @@ public class User implements Serializable {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
     }
 
 }

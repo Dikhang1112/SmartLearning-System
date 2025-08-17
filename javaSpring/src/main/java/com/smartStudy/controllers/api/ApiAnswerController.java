@@ -47,15 +47,15 @@ public class ApiAnswerController {
 
     // POST /api/answers
     @PostMapping("/answers")
-    public ResponseEntity<?> create(@RequestBody AnswerUpsertDTO req) {
-        if (req.getQuestionId() == null || req.getAnswerText() == null) {
+    public ResponseEntity<?> create(@RequestBody AnswerUpsertDTO req,
+                                    @RequestParam Integer questionId) {
+        if (req.getIsCorrect() == null || req.getAnswerText() == null) {
             return ResponseEntity.badRequest().body("questionId và answerText là bắt buộc");
         }
         ExerciseAnswer a = new ExerciseAnswer();
         a.setAnswerText(req.getAnswerText());
         a.setIsCorrect(req.getIsCorrect() != null ? req.getIsCorrect() : false);
-
-        ExerciseAnswer created = answerService.create(a, req.getQuestionId());
+        ExerciseAnswer created = answerService.create(a,questionId);
         if (created == null) return ResponseEntity.badRequest().body("questionId không hợp lệ");
         return ResponseEntity.ok(toDto(created));
     }

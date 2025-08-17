@@ -22,6 +22,10 @@ import java.util.List;
         @NamedQuery(name = "Student.findAll", query = "SELECT s FROM Student s"),
         @NamedQuery(name = "Student.findByUserId", query = "SELECT s FROM Student s WHERE s.userId = :userId")})
 public class Student implements Serializable {
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
+    @JsonIgnore
+    private List<ExerciseSubmission> exerciseSubmissionList;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -105,6 +109,14 @@ public class Student implements Serializable {
 
     public void setClassList(List<Class> classList) {
         this.classList = classList;
+    }
+
+    public List<ExerciseSubmission> getExerciseSubmissionList() {
+        return exerciseSubmissionList;
+    }
+
+    public void setExerciseSubmissionList(List<ExerciseSubmission> exerciseSubmissionList) {
+        this.exerciseSubmissionList = exerciseSubmissionList;
     }
 
 }

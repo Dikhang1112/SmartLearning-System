@@ -43,5 +43,6 @@
     <class>com.smartStudy.pojo.ExerciseQuestion</class>
     <class>com.smartStudy.pojo.Note</class>
     <class>com.smartStudy.pojo.Class</class>
+    <class>com.smartStudy.pojo.EssayResponse</class>
   </persistence-unit>
 </persistence>

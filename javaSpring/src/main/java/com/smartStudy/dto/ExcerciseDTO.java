@@ -5,16 +5,14 @@ public class ExcerciseDTO {
     private String title;
     private String description;
     private String type;
-    private  Integer createBy;
     private ChapterDTO chapter;
 
-    public ExcerciseDTO(Integer id, String title, String description, String type, Integer createBy, ChapterDTO chapter)
+    public ExcerciseDTO(Integer id, String title, String description, String type, ChapterDTO chapter)
     {
         this.id = id;
         this.title = title;
         this.description = description;
         this.type = type;
-        this.createBy = createBy;
         this.chapter = chapter;
     }
 
@@ -48,14 +46,6 @@ public class ExcerciseDTO {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public Integer getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(Integer createBy) {
-        this.createBy = createBy;
     }
 
     public ChapterDTO getChapter() {

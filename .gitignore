@@ -261,3 +261,4 @@ yarn-error.log*
 *.log
 coverage/
 
+javaSpring/src/main/resources/cccd-gcv.json

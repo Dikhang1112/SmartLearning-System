@@ -4,20 +4,8 @@
  */
 package com.smartStudy.pojo;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
@@ -35,22 +23,26 @@ import java.util.List;
     @NamedQuery(name = "ExerciseQuestion.findByOrderIndex", query = "SELECT e FROM ExerciseQuestion e WHERE e.orderIndex = :orderIndex")})
 public class ExerciseQuestion implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "id")
-    private Integer id;
+    @NotNull
+    @Column(name = "order_index")
+    private int orderIndex;
     @Basic(optional = false)
     @NotNull
     @Lob
     @Size(min = 1, max = 65535)
     @Column(name = "question")
     private String question;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "exerciseQuestion")
+    @JsonIgnore
+    private List<EssayResponse> essayResponseList;
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @NotNull
-    @Column(name = "order_index")
-    private int orderIndex;
+    @Column(name = "id")
+    private Integer id;
 
     @Lob
     @Column(name = "solution")
@@ -59,8 +51,10 @@ public class ExerciseQuestion implements Serializable {
     @ManyToOne(optional = false)
     private Exercise exerciseId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
+    @JsonIgnore
     private List<ExerciseAnswer> exerciseAnswerList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "exerciseQuestion")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "exerciseQuestion", fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<McqResponse> mcqResponseList;
 
     public ExerciseQuestion() {
@@ -82,22 +76,6 @@ public class ExerciseQuestion implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public int getOrderIndex() {
-        return orderIndex;
-    }
-
-    public void setOrderIndex(int orderIndex) {
-        this.orderIndex = orderIndex;
     }
 
     public Exercise getExerciseId() {
@@ -155,5 +133,29 @@ public class ExerciseQuestion implements Serializable {
 
     public void setSolution(String solution) {
         this.solution = solution;
+    }
+
+    public int getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(int orderIndex) {
+        this.orderIndex = orderIndex;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(String question) {
+        this.question = question;
+    }
+
+    public List<EssayResponse> getEssayResponseList() {
+        return essayResponseList;
+    }
+
+    public void setEssayResponseList(List<EssayResponse> essayResponseList) {
+        this.essayResponseList = essayResponseList;
     }
 }

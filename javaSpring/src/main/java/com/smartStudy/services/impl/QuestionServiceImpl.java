@@ -53,7 +53,6 @@ public class QuestionServiceImpl implements QuestionService {
         // gán Exercise theo id
         Exercise ex = session().get(Exercise.class, exerciseId);
         if (ex == null) return null;
-
         q.setExerciseId(ex);
         return repo.save(q);
     }

@@ -14,6 +14,7 @@ export const endpoints = {
     'chapters': '/chapters',
     'excercises': '/exercises',
     'questions': '/questions',
+    'answers': '/answers',
     // --- Attachments ---
     chapterAttachments: (chapterId) => `/chapters/${chapterId}/attachments`,
     attachmentOpen: (id) => `/attachments/${id}/open`,

@@ -45,7 +45,6 @@ public class AnswerServiceImpl implements AnswerService {
         ExerciseQuestion q = session().get(ExerciseQuestion.class, questionId);
         if (q == null) return null;
         a.setQuestionId(q);
-        if (a.getIsCorrect() == null) a.setIsCorrect(false);
         return repo.save(a);
     }
 

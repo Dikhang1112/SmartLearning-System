@@ -12,10 +12,8 @@ const ChapterSection = () => {
     const { subjectId, chapterId } = useParams();
     const { collapsed } = useContext(SidebarContext);
     const user = useContext(MyUserContext);
-
     const role = user?.role || 'STUDENT'; // mặc định readonly nếu chưa đăng nhập
     const canManage = role === 'TEACHER';
-
     const [attachments, setAttachments] = useState([]);
     const [file, setFile] = useState(null);
     const [attachmentType, setAttachmentType] = useState('CONTENT'); // CONTENT | SUMMARY

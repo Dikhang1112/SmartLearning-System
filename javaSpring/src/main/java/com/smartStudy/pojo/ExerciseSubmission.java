@@ -4,22 +4,9 @@
  */
 package com.smartStudy.pojo;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -39,6 +26,19 @@ import java.util.List;
     @NamedQuery(name = "ExerciseSubmission.findByGrade", query = "SELECT e FROM ExerciseSubmission e WHERE e.grade = :grade")})
 public class ExerciseSubmission implements Serializable {
 
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 9)
+    @Column(name = "status")
+    private String status;
+    @Lob
+    @Size(max = 65535)
+    @Column(name = "feedback")
+    private String feedback;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "exerciseSubmission")
+    @JsonIgnore
+    private List<EssayResponse> essayResponseList;
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,22 +51,15 @@ public class ExerciseSubmission implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "grade")
     private BigDecimal grade;
-    @Lob
-    @Size(max = 65535)
-    @Column(name = "feedback")
-    private String feedback;
-    @Lob
-    @Size(max = 65535)
-    @Column(name = "essay_answer")
-    private String essayAnswer;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "exerciseSubmission")
+    @JsonIgnore
     private List<McqResponse> mcqResponseList;
     @JoinColumn(name = "exercise_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Exercise exerciseId;
-    @JoinColumn(name = "student_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private User studentId;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", referencedColumnName = "user_id", nullable = false)
+    private Student student;
 
     public ExerciseSubmission() {
     }
@@ -99,21 +92,6 @@ public class ExerciseSubmission implements Serializable {
         this.grade = grade;
     }
 
-    public String getFeedback() {
-        return feedback;
-    }
-
-    public void setFeedback(String feedback) {
-        this.feedback = feedback;
-    }
-
-    public String getEssayAnswer() {
-        return essayAnswer;
-    }
-
-    public void setEssayAnswer(String essayAnswer) {
-        this.essayAnswer = essayAnswer;
-    }
 
     public List<McqResponse> getMcqResponseList() {
         return mcqResponseList;
@@ -131,13 +109,6 @@ public class ExerciseSubmission implements Serializable {
         this.exerciseId = exerciseId;
     }
 
-    public User getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(User studentId) {
-        this.studentId = studentId;
-    }
 
     @Override
     public int hashCode() {
@@ -163,5 +134,37 @@ public class ExerciseSubmission implements Serializable {
     public String toString() {
         return "com.smartStudy.pojo.ExerciseSubmission[ id=" + id + " ]";
     }
-    
+
+
+    public List<EssayResponse> getEssayResponseList() {
+        return essayResponseList;
+    }
+
+    public void setEssayResponseList(List<EssayResponse> essayResponseList) {
+        this.essayResponseList = essayResponseList;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
 }

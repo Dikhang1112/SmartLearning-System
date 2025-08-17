@@ -10,7 +10,7 @@ public interface ExcerciseService {
     long countExercises(Map<String, String> params);
     Exercise get(Integer id);
     List<Exercise> findByChapterId(Integer cid);
-    Exercise create(Exercise ex);
-    Exercise update(Integer id, Exercise ex);
+    Exercise create(Exercise ex, Integer chapterId);
+    Exercise update(Integer id, Exercise ex, Integer chapterId);
     void delete(Integer id);
 }

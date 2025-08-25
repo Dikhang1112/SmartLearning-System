@@ -1,5 +1,6 @@
 package com.smartStudy.services.impl;
 
+import com.smartStudy.dto.EssayReSimpleDTO;
 import com.smartStudy.pojo.EssayResponse;
 import com.smartStudy.pojo.Exercise;
 import com.smartStudy.pojo.ExerciseQuestion;
@@ -34,8 +35,14 @@ public class EssayResponseServiceImpl implements EssayResponseService {
 
     @Override
     public EssayResponse findOne(Integer submissionId, Integer questionId) {
-        return repo.findOne(submissionId, questionId);
+        return this.repo.findOne(submissionId, questionId);
     }
+
+    @Override
+    public List<EssayReSimpleDTO> findByExercise(Integer exciseId) {
+        return this.repo.findByExercise(exciseId);
+    }
+
 
     @Override
     public EssayResponse upsert(Integer submissionId, Integer questionId, String answerEssay) {
@@ -53,24 +60,21 @@ public class EssayResponseServiceImpl implements EssayResponseService {
             throw new IllegalArgumentException("Question not found: " + questionId);
 
         Exercise ex = sub.getExerciseId();
-        if (ex == null || q.getExerciseId() == null || !ex.getId().equals(q.getExerciseId())) {
-            throw new IllegalArgumentException("Question does not belong to this submission's exercise");
-        }
         // Chặn nhầm loại bài
         if (ex.getType() != null && !"ESSAY".equalsIgnoreCase(ex.getType())) {
             throw new IllegalStateException("Exercise is not ESSAY; cannot save essay response");
         }
 
-        return repo.upsert(submissionId, questionId, answerEssay);
+        return this.repo.upsert(submissionId, questionId, answerEssay);
     }
 
     @Override
     public void deleteOne(Integer submissionId, Integer questionId) {
-        repo.deleteOne(submissionId, questionId);
+        this.repo.deleteOne(submissionId, questionId);
     }
 
     @Override
     public void deleteBySubmission(Integer submissionId) {
-        repo.deleteBySubmission(submissionId);
+        this.repo.deleteBySubmission(submissionId);
     }
 }

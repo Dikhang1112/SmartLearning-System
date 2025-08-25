@@ -21,10 +21,10 @@ public class AnswerServiceImpl implements AnswerService {
     @Autowired
     private LocalSessionFactoryBean factory;
 
-    private Session session()
-    {
+    private Session session() {
         return this.factory.getObject().getCurrentSession();
     }
+
     @Override
     public List<ExerciseAnswer> getAnswers(Map<String, String> params) {
         return repo.getAnswers(params);
@@ -54,13 +54,27 @@ public class AnswerServiceImpl implements AnswerService {
         if (old == null) return null;
 
         if (patch.getAnswerText() != null) old.setAnswerText(patch.getAnswerText());
-        if (patch.getIsCorrect() != null)  old.setIsCorrect(patch.getIsCorrect());
+        if (patch.getIsCorrect() != null) old.setIsCorrect(patch.getIsCorrect());
 
         if (questionId != null) {
             ExerciseQuestion q = session().get(ExerciseQuestion.class, questionId);
             if (q != null) old.setQuestionId(q);
         }
         return repo.save(old);
+    }
+
+    @Override
+    public List<Object[]> findCorrectPairsByExercise(Integer exerciseId) {
+        final String hql = """
+                    select a.questionId.id, a.id
+                    from ExerciseAnswer a
+                    where a.questionId.exerciseId.id = :exId
+                      and a.isCorrect = true
+                """;
+        return session()
+                .createQuery(hql, Object[].class)
+                .setParameter("exId", exerciseId)
+                .getResultList();
     }
 
     @Override

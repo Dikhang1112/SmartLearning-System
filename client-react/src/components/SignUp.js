@@ -99,7 +99,7 @@ const SignUp = () => {
         } catch (err) {
             if (err.response) {
                 if (err.response.status === 500) {
-                    setError("Email đã tồn tại. Vui lòng sử dụng email khác.");
+                    setError("Đã có lỗi vui lòng thử lại sau.");
                 } else if (err.response.data && err.response.data.message) {
                     setError(err.response.data.message);
                 } else {

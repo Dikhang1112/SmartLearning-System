@@ -21,6 +21,12 @@ import java.util.List;
     @NamedQuery(name = "Teacher.findAll", query = "SELECT t FROM Teacher t"),
     @NamedQuery(name = "Teacher.findByUserId", query = "SELECT t FROM Teacher t WHERE t.userId = :userId")})
 public class Teacher implements Serializable {
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "teacherId")
+    private List<Notification> notificationList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "teacher")
+    @JsonIgnore
+    private List<TeacherAssignment> teacherAssignmentList;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -36,12 +42,12 @@ public class Teacher implements Serializable {
     @JoinTable(name = "teacher_class", joinColumns = {
             @JoinColumn(name = "teacher_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
             @JoinColumn(name = "class_id", referencedColumnName = "id")})
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Class> classList;
 
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @OneToOne(optional = false,fetch = FetchType.EAGER)
+    @OneToOne(optional = false)
     @JsonIgnore
     private User user;
 
@@ -108,5 +114,20 @@ public class Teacher implements Serializable {
     public void setClassList(List<Class> classList) {
         this.classList = classList;
     }
-    
+
+    public List<TeacherAssignment> getTeacherAssignmentList() {
+        return teacherAssignmentList;
+    }
+
+    public void setTeacherAssignmentList(List<TeacherAssignment> teacherAssignmentList) {
+        this.teacherAssignmentList = teacherAssignmentList;
+    }
+
+    public List<Notification> getNotificationList() {
+        return notificationList;
+    }
+
+    public void setNotificationList(List<Notification> notificationList) {
+        this.notificationList = notificationList;
+    }
 }

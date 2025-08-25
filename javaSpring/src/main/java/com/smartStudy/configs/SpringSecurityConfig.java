@@ -6,6 +6,7 @@ import com.smartStudy.filters.JwtFilter;
 
 import java.util.List;
 
+import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -57,6 +58,8 @@ public class SpringSecurityConfig {
                         .requestMatchers("/login").permitAll() // cho phép trang login, static
                         .requestMatchers("/javaSpring").hasRole("ADMIN") // chỉ ADMIN mới vào được trang "/"
                         .requestMatchers("/").hasRole("ADMIN")
+                        .requestMatchers( "/api/google-login", "/api/login").permitAll()
+                        .requestMatchers("/public/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form

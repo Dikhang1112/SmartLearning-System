@@ -4,46 +4,39 @@
  */
 package com.smartStudy.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import java.io.Serializable;
 import java.util.List;
 
-
 /**
+ *
  * @author AN515-57
  */
 @Entity
 @Table(name = "student")
 @NamedQueries({
-        @NamedQuery(name = "Student.findAll", query = "SELECT s FROM Student s"),
-        @NamedQuery(name = "Student.findByUserId", query = "SELECT s FROM Student s WHERE s.userId = :userId")})
+    @NamedQuery(name = "Student.findAll", query = "SELECT s FROM Student s"),
+    @NamedQuery(name = "Student.findByUserId", query = "SELECT s FROM Student s WHERE s.userId = :userId")})
 public class Student implements Serializable {
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
-    @JsonIgnore
-    private List<ExerciseSubmission> exerciseSubmissionList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
+    private List<Notification> notificationList;
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull
     @Column(name = "user_id")
     private Integer userId;
-    @JoinTable(name = "student_subject", joinColumns = {
-            @JoinColumn(name = "student_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
-            @JoinColumn(name = "subject_id", referencedColumnName = "id")})
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JsonIgnore
-    private List<Subject> subjectList;
-    @JoinTable(name = "student_class", joinColumns = {
-            @JoinColumn(name = "student_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
-            @JoinColumn(name = "class_id", referencedColumnName = "id")})
-    @ManyToMany
+    @ManyToMany(mappedBy = "studentList")
     private List<Class> classList;
-    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinTable(name = "student_subject", joinColumns = {
+        @JoinColumn(name = "student_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
+        @JoinColumn(name = "subject_id", referencedColumnName = "id")})
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Subject> subjectList;
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     @OneToOne(optional = false)
     private User user;
 
@@ -60,6 +53,22 @@ public class Student implements Serializable {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+
+    public List<Class> getClassList() {
+        return classList;
+    }
+
+    public void setClassList(List<Class> classList) {
+        this.classList = classList;
+    }
+
+    public List<Subject> getSubjectList() {
+        return subjectList;
+    }
+
+    public void setSubjectList(List<Subject> subjectList) {
+        this.subjectList = subjectList;
     }
 
     public User getUser() {
@@ -95,28 +104,12 @@ public class Student implements Serializable {
         return "com.smartStudy.pojo.Student[ userId=" + userId + " ]";
     }
 
-    public List<Subject> getSubjectList() {
-        return subjectList;
+    public List<Notification> getNotificationList() {
+        return notificationList;
     }
 
-    public void setSubjectList(List<Subject> subjectList) {
-        this.subjectList = subjectList;
+    public void setNotificationList(List<Notification> notificationList) {
+        this.notificationList = notificationList;
     }
-
-    public List<Class> getClassList() {
-        return classList;
-    }
-
-    public void setClassList(List<Class> classList) {
-        this.classList = classList;
-    }
-
-    public List<ExerciseSubmission> getExerciseSubmissionList() {
-        return exerciseSubmissionList;
-    }
-
-    public void setExerciseSubmissionList(List<ExerciseSubmission> exerciseSubmissionList) {
-        this.exerciseSubmissionList = exerciseSubmissionList;
-    }
-
+    
 }

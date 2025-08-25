@@ -27,7 +27,6 @@ import java.util.List;
         @NamedQuery(name = "Subject.findByCreatedAt", query = "SELECT s FROM Subject s WHERE s.createdAt = :createdAt"),
         @NamedQuery(name = "Subject.findByUpdatedAt", query = "SELECT s FROM Subject s WHERE s.updatedAt = :updatedAt")})
 public class Subject implements Serializable {
-
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 200)
@@ -43,7 +42,9 @@ public class Subject implements Serializable {
     @ManyToMany(mappedBy = "subjectList")
     @JsonIgnore
     private List<Student> studentList;
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subject")
+    @JsonIgnore
+    private List<TeacherAssignment> teacherAssignmentList;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -159,21 +160,21 @@ public class Subject implements Serializable {
     }
 
 
-    public List<Student> getStudentList() {
-        return studentList;
-    }
-
-    public void setStudentList(List<Student> studentList) {
-        this.studentList = studentList;
-    }
-
-
     public MultipartFile getFile() {
         return file;
     }
 
     public void setFile(MultipartFile file) {
         this.file = file;
+    }
+
+
+    public List<TeacherAssignment> getTeacherAssignmentList() {
+        return teacherAssignmentList;
+    }
+
+    public void setTeacherAssignmentList(List<TeacherAssignment> teacherAssignmentList) {
+        this.teacherAssignmentList = teacherAssignmentList;
     }
 
     public String getTitle() {
@@ -198,5 +199,13 @@ public class Subject implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Student> getStudentList() {
+        return studentList;
+    }
+
+    public void setStudentList(List<Student> studentList) {
+        this.studentList = studentList;
     }
 }

@@ -5,6 +5,7 @@ import { MyUserDispatchContext } from '../reducers/MyUserReducer';
 import { MyUserContext } from '../reducers/MyUserReducer';
 import { useNavigate } from 'react-router-dom';
 import cookie from 'react-cookies';
+import AuthGoogle from '../configs/AuthGoogle';
 
 const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
@@ -82,6 +83,42 @@ const Login = ({ onLoginSuccess }) => {
         }
     };
 
+    const handleGoogleLoginSuccess = async (token) => {
+        setLoading(true);
+        setError('');
+        setSuccess('');
+        try {
+            console.log("JWT token for profile call: ", token); // Log JWT trước khi gọi profile
+            const currentUser = await authApis().get(endpoints.auth); // Sửa endpoint thành endpoints.auth (/auth/user)
+            const userInfo = currentUser.data;
+            dispatch({
+                type: "loginGoogle",
+                payload: {
+                    token: token,
+                    email: userInfo.email,
+                    name: userInfo.name,
+                    role: userInfo.role,
+                    id: userInfo.id,
+                    avatar: userInfo.avatar
+                }
+            });
+            setSuccess('Đăng nhập bằng Google thành công!');
+            setError('');
+            if (onLoginSuccess) onLoginSuccess(); // Tắt modal khi login thành công
+            if (userInfo.role === "STUDENT") {
+                nav('/studentDashboard');
+            } else if (userInfo.role === "TEACHER") {
+                nav('/teacherDashboard');
+            }
+        } catch (err) {
+            console.error("Profile fetch error after Google login: ", err); // Log lỗi gọi profile
+            setError('Có lỗi xảy ra sau khi đăng nhập bằng Google. Vui lòng thử lại.');
+            setSuccess('');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="login-container">
             <div className="login-title">Đăng nhập</div>
@@ -111,9 +148,12 @@ const Login = ({ onLoginSuccess }) => {
                 </div>
                 {error && <div className="login-error">{error}</div>}
                 {success && <div className="login-success">{success}</div>}
-                <button type="submit" className="login-btn" disabled={loading}>
-                    {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-                </button>
+                <AuthGoogle onLoginSuccess={handleGoogleLoginSuccess} />
+                <div className="login-actions">
+                    <button type="submit" className="login-btn" disabled={loading}>
+                        {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                    </button>
+                </div>
             </form>
         </div>
     );

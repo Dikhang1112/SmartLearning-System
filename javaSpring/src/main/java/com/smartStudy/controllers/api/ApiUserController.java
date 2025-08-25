@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.security.Principal;
@@ -14,9 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api")
-@CrossOrigin
 public class ApiUserController {
     @Autowired
     private Cloudinary cloudinary;
@@ -58,13 +59,30 @@ public class ApiUserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai thông tin đăng nhập");
     }
 
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload) {
+        System.out.println("Received payload: " + payload);
+        try {
+            String idToken = payload.get("idToken");
+            System.out.println("Extracted idToken: " + idToken);
+            if (idToken == null || idToken.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing Google ID token");
+            }
+            String token = userService.authenticateGoogle(idToken);
+            System.out.println("Returning JWT: " + token);
+            return ResponseEntity.ok().body(Collections.singletonMap("token", token));
+        } catch (Exception e) {
+            System.out.println("Google login error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Google login failed: " + e.getMessage());
+        }
+    }
 
     @RequestMapping("/auth/user")
     @ResponseBody
     @CrossOrigin
-    public ResponseEntity<?> getProfile(Principal user) {
-        String principalEmail = user.getName();
-        User u = userService.getUserByMail(principalEmail);
+    public ResponseEntity<?> getProfile(Authentication user) {
+        String email = user.getName();
+        User u = userService.getUserByMail(email);
         if (u == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng!");
         }

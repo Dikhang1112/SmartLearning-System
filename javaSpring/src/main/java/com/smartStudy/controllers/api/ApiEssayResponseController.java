@@ -1,9 +1,12 @@
 package com.smartStudy.controllers.api;
 
+import com.smartStudy.dto.EssayReSimpleDTO;
 import com.smartStudy.dto.EssayResponseDTO;
 import com.smartStudy.pojo.EssayResponse;
 import com.smartStudy.services.EssayResponseService;
 import java.util.List;
+
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +38,13 @@ public class ApiEssayResponseController {
         if (r == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(EssayResponseDTO.fromEntity(r));
     }
+
+    @GetMapping("/essay-responses/exercise/{exerciseId}")
+    public ResponseEntity<List<EssayReSimpleDTO>> getEssayResponsesByExercise(@PathVariable(value = "exerciseId") Integer exerciseId) {
+        List<EssayReSimpleDTO> data = essayResponseService.findByExercise(exerciseId);
+        return data.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(data);
+    }
+
 
     // PUT upsert (autosave) - body { "answerEssay": "..." }
     public static class EssayUpsertDTO { public String answerEssay; }

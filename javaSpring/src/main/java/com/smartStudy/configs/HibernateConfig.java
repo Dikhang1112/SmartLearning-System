@@ -57,6 +57,10 @@ public class HibernateConfig {
         Properties props = new Properties();
         props.put(DIALECT, env.getProperty("hibernate.dialect"));
         props.put(SHOW_SQL, env.getProperty("hibernate.showSql"));
+        props.put("hibernate.discriminator.implicit_for_joined", "false");
+        props.put("hibernate.discriminator.ignore_explicit_for_joined", "true");
+        props.put("hibernate.show_sql", "true");
+        props.put("hibernate.format_sql", "true");
         return props;
     }
      @Bean

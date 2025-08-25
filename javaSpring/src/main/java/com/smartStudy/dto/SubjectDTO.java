@@ -3,10 +3,19 @@ package com.smartStudy.dto;
 public class SubjectDTO {
     private Integer id;
     private String title;
-
     private String image;
     private String teacherNames;
 
+    public SubjectDTO()
+    {
+
+    }
+    public  SubjectDTO(Integer id, String title)
+    {
+        this.id = id;
+        this.title = title;
+
+    }
     public SubjectDTO(Integer id, String title, String image, String teacherNames)
     {
         this.id = id;

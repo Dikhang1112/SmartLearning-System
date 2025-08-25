@@ -5,9 +5,10 @@
     background-color: rgb(175, 185, 193);
     left: 0;
     top: 0;
-    position: relative;
+    position: fixed;
     margin: 0;
     border-radius: 0;
+    z-index: 300;
     box-sizing: border-box;
 }
 
@@ -15,8 +16,7 @@
 .header-container {
     width: 100%;
     padding: 25px;
-    margin-top: 15px;
-    margin-bottom: 10px;
+    margin-top: 10px;
     margin-left: 45px;
     /* You can adjust the value (e.g., 32px or 2rem) */
     margin-right: 38px;
@@ -37,4 +37,26 @@
 button {
     padding: 15px;
     margin: 15px;
+}
+
+.header-icon {
+    font-size: 30px;
+    cursor: pointer;
+    color: #555b5b;
+    transition: color 0.2s ease;
+}
+
+.header-icon:hover {
+    color: #7eafe4;
+}
+
+.header-icon-notice {
+    font-size: 30px;
+    cursor: pointer;
+    color: #638add;
+    transition: color 0.2s ease;
+}
+
+.header-icon-notice:hover {
+    color: #a85550;
 }

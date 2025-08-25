@@ -41,16 +41,21 @@ public class JwtUtils {
         return signedJWT.serialize();
     }
 
-    public static String validateTokenAndGetUsername(String token) throws Exception {
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        JWSVerifier verifier = new MACVerifier(SECRET);
+    public static String validateTokenAndGetUsername(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWSVerifier verifier = new MACVerifier(SECRET);
 
-        if (signedJWT.verify(verifier)) {
-            Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
-            if (expiration.after(new Date())) {
-                return signedJWT.getJWTClaimsSet().getSubject();
+            if (signedJWT.verify(verifier)) {
+                Date exp = signedJWT.getJWTClaimsSet().getExpirationTime();
+                if (exp != null && exp.after(new Date())) {
+                    return signedJWT.getJWTClaimsSet().getSubject();
+                }
             }
+        } catch (Exception e) {
+            // log ở mức DEBUG nếu cần, không throw
         }
         return null;
     }
+
 }

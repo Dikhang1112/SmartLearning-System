@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nfs://nbsp/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nfs://nbsp/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.smartStudy.configs;
 
@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -21,9 +22,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
-@ComponentScan(basePackages = {"com.smartStudy"
-})
-    public class WebAppContextConfigs implements WebMvcConfigurer {
+@ComponentScan(basePackages = {"com.smartStudy"})
+public class WebAppContextConfigs implements WebMvcConfigurer {
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -39,13 +39,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
         registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
         registry.addResourceHandler("/images/**").addResourceLocations("classpath:/static/images/");
+        // Thêm handler cho các file tĩnh khác nếu cần
+        registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
+    }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:8080") // Cho phép origin của frontend React
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Phương thức cho phép
+                .allowedHeaders("*") // Cho phép tất cả header
+                .allowCredentials(true) // Cho phép gửi cookie/credentials
+                .exposedHeaders("Authorization") // Phơi bày header Authorization
+                .maxAge(3600); // Cache pre-flight request trong 1 giờ
     }
 
     @Bean
     public StandardServletMultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
     }
-
-
 }

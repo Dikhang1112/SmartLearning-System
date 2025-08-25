@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,8 @@ public class ApiSubmissionController {
         return ResponseEntity.ok(SubmissionDTO.fromEntities(list));
     }
 
+
+    //Create lưu bài lần đầu
     @PostMapping("/submissions")
     public ResponseEntity<?> create(@RequestBody ExerciseSubmission req,
                                     @RequestParam Integer exerciseId,
@@ -52,7 +55,7 @@ public class ApiSubmissionController {
     }
 
     @PutMapping("/submissions/{id}")
-    public ResponseEntity<?> update(@PathVariable Integer id,
+    public ResponseEntity<?> update(@PathVariable(value = "id") Integer id,
                                     @RequestBody ExerciseSubmission req,
                                     @RequestParam(required = false) Integer exerciseId,
                                     @RequestParam(required = false) Integer studentId) {
@@ -61,6 +64,19 @@ public class ApiSubmissionController {
         return ResponseEntity.ok(SubmissionDTO.fromEntity(updated));
     }
 
+    @PostMapping("/submissions/{id}/regrade-mcq")
+    public ResponseEntity<?> regradeMcq(@PathVariable(value = "id") Integer id) {
+        try {
+            int mcqScore = submissionService.autoGradeMcq(id);
+            var s = submissionService.findById(id);
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("mcqScore", mcqScore);
+            payload.put("submission", SubmissionDTO.fromEntity(s));
+            return ResponseEntity.ok(payload);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
     @DeleteMapping("/submissions/{id}")
     public ResponseEntity<?> delete(@PathVariable(value = "id") Integer id) {
         ExerciseSubmission existed = submissionService.findById(id);

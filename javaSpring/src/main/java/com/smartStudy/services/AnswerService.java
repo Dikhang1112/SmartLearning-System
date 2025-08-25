@@ -11,5 +11,8 @@ public interface AnswerService {
     ExerciseAnswer get(Integer id);
     ExerciseAnswer create(ExerciseAnswer a, Integer questionId);
     ExerciseAnswer update(Integer id, ExerciseAnswer a, Integer questionId);
+
+    /** Trả về các cặp (questionId, correctAnswerId) cho 1 exercise */
+    List<Object[]> findCorrectPairsByExercise(Integer exerciseId);
     void delete(Integer id);
 }

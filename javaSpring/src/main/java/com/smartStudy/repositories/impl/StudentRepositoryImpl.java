@@ -29,19 +29,21 @@ public class StudentRepositoryImpl implements StudentRepository {
     public List<Student> getStudents(Map<String, String> params) {
         Session s = getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Student> q =   b.createQuery(Student.class);
-        Root root = q.from(Student.class);
+        CriteriaQuery<Student> q = b.createQuery(Student.class);
+        Root<Student> root = q.from(Student.class);
         q.select(root);
+
         if (params != null) {
             List<Predicate> predicates = new ArrayList<>();
-            String classes = params.get("class_name");
-            if (classes != null && !classes.isEmpty()) {
-                predicates.add(b.like(root.get("class_name"), String.format("%%%s%%", classes)));
+            String className = params.get("className"); // Đổi từ class_name thành className
+            if (className != null && !className.isEmpty()) {
+                Join<Student, Class> classJoin = root.join("classList");
+                predicates.add(b.like(classJoin.get("className"), String.format("%%%s%%", className)));
             }
             q.where(predicates.toArray(Predicate[]::new));
         }
         Query query = s.createQuery(q);
-        return  query.getResultList();
+        return query.getResultList();
     }
 
     @Override

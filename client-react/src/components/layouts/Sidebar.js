@@ -1,32 +1,43 @@
-import React, { useContext } from 'react'
-import { MyUserContext } from '../../reducers/MyUserReducer'
-import { FaChevronLeft, FaChevronRight, FaBook, FaCalendarAlt } from "react-icons/fa";
-import { SidebarContext } from '../../reducers/SidebarContext'; // Đảm bảo path đúng!
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useMemo } from 'react';
+import { MyUserContext } from '../../reducers/MyUserReducer';
+import { SidebarContext } from '../../reducers/SidebarContext';
+import { useNavigate } from 'react-router-dom';
+import { FaChevronLeft, FaChevronRight, FaBook, FaCalendarAlt, FaAddressBook } from 'react-icons/fa';
 import '../../static/sidebar.css';
 
-const menus = [
-    { icon: <FaBook />, title: "Môn học", path: "/studentDashboard" },
-    { icon: <FaCalendarAlt />, title: "Kế hoạch học tập", path: "/studyPlans" }, // Cập nhật path nếu có route này
-];
-
 const Sidebar = () => {
-    const user = useContext(MyUserContext);
-    const { collapsed, setCollapsed } = useContext(SidebarContext);
-    const navigate = useNavigate();
+    const user = useContext(MyUserContext);            // Hook 1
+    const { collapsed, setCollapsed } = useContext(SidebarContext); // Hook 2
+    const navigate = useNavigate();                    // Hook 3
 
+    const role = (user?.role ?? '').toUpperCase();
+    const menus = useMemo(() => {
+        if (role === 'STUDENT') {
+            return [
+                { icon: <FaBook />, title: 'Môn học', path: '/studentDashboard' },
+                { icon: <FaCalendarAlt />, title: 'Kế hoạch học tập', path: '/studyPlans' },
+            ];
+        }
+        if (role === 'TEACHER') {
+            return [
+                { icon: <FaBook />, title: 'Môn học', path: '/teacherDashboard' }, // FaBook cho TEACHER
+                { icon: <FaAddressBook />, title: 'Danh sách bài nộp', path: '/submission' },
+            ];
+        }
+        return []; // chưa đăng nhập / role khác → không hiển thị gì
+    }, [role]);
+
+    // ❗️Đặt return sau tất cả hooks
     if (!user) return null;
 
-    // Hàm xử lý khi click menu
-    const handleMenuClick = (path) => {
-        if (path) navigate(path);
-    }
+    const handleMenuClick = (path) => { if (path) navigate(path); };
 
     return (
-        <div className={`sidebar${collapsed ? " collapsed" : ""}`}>
+        <div className={`sidebar${collapsed ? ' collapsed' : ''}`}>
             <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)}>
                 {collapsed ? <FaChevronRight size={18} /> : <FaChevronLeft size={18} />}
             </button>
+
             <div className="sidebar-menu">
                 {menus.map((item, idx) => (
                     <div
@@ -43,4 +54,5 @@ const Sidebar = () => {
         </div>
     );
 };
+
 export default Sidebar;

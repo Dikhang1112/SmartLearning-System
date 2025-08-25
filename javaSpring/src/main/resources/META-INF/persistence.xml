@@ -44,5 +44,9 @@
     <class>com.smartStudy.pojo.Note</class>
     <class>com.smartStudy.pojo.Class</class>
     <class>com.smartStudy.pojo.EssayResponse</class>
+    <class>com.smartStudy.pojo.TeacherAssignment</class>
+    <class>com.smartStudy.pojo.Notification</class>
+    <class>com.smartStudy.pojo.StudentClass</class>
+    <class>com.smartStudy.pojo.TeacherClass</class>
   </persistence-unit>
 </persistence>

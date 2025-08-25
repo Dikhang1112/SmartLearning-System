@@ -13,6 +13,9 @@ public class TeacherDTO {
         this.user = user;
         this.subjectList = subjectList;
     }
+
+
+
     public Integer getUserId() {
         return userId;
     }

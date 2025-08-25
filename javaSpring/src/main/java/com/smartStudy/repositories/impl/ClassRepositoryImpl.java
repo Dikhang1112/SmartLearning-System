@@ -8,17 +8,16 @@ import com.smartStudy.pojo.Teacher;
 import com.smartStudy.repositories.ClassRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +52,53 @@ public class ClassRepositoryImpl implements ClassRepository {
         }
         Query query = s.createQuery(q);
         return query.getResultList();
+    }
+
+    @Override
+    public List<Teacher> getTeachersOfClass(int classId) {
+        Session s = getCurrentSession();
+        // HQL: join quan hệ ManyToMany/OneToMany c.teacherList
+        String hql = """
+            select distinct t
+            from Class c
+            join c.teacherList t
+            where c.id = :classId
+            """;
+        Query<Teacher> q = s.createQuery(hql, Teacher.class);
+        q.setParameter("classId", classId);
+        return q.getResultList();    }
+
+    @Override
+    public List<Subject> getSubjectsOfTeacher(int teacherId) {
+        Session s = getCurrentSession();
+        // HQL: join quan hệ t.subjectList
+        String hql = """
+            select distinct s
+            from Teacher t
+            join t.subjectList s
+            where t.userId = :teacherId
+            order by s.title
+            """;
+        Query<Subject> q = s.createQuery(hql, Subject.class);
+        q.setParameter("teacherId", teacherId);
+        return q.getResultList();
+    }
+
+    @Override
+    public Teacher getTeacherById(int teacherId) {
+        Session s = getCurrentSession();
+        // HQL: join fetch user (ManyToOne) + subjectList (collection)
+        String hql = """
+            select distinct t
+            from Teacher t
+            left join fetch t.user u
+            left join fetch t.subjectList s
+            where t.id = :id
+            """;
+
+        Query<Teacher> q = s.createQuery(hql, Teacher.class);
+        q.setParameter("id", teacherId);
+        return q.uniqueResult();
     }
 
     @Override

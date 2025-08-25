@@ -6,6 +6,7 @@ export const endpoints = {
     'users': '/users',
     'login': '/login',
     'auth': '/auth/user',
+    'authGoogle': '/google-login',
     'signup': '/users',
     'teachers': '/teachers',
     'students': '/students',
@@ -15,6 +16,11 @@ export const endpoints = {
     'excercises': '/exercises',
     'questions': '/questions',
     'answers': '/answers',
+    'submissions': '/submissions',
+    'mcq-responses': '/mcq-responses',
+    'essay-responses': '/essay-responses',
+    // --- Class Assignments ---
+    classAssignmentByTeacher: (teacherId) => `/assign/teacher/${teacherId}`,
     // --- Attachments ---
     chapterAttachments: (chapterId) => `/chapters/${chapterId}/attachments`,
     attachmentOpen: (id) => `/attachments/${id}/open`,
@@ -23,6 +29,10 @@ export const endpoints = {
     // --- Exercises/Questions/Answer ---
     'questionsByExercise': (exerciseId) => `/questions/exercise/${exerciseId}`,
     'answersByQuestion': (questionId) => `/answers/question/${questionId}`,
+    // --- Submissions ---
+    'submissionsByExercise': (exerciseId) => `/submissions/exercise/${exerciseId}`,
+    'submissionsByStudent': (studentId) => `/submissions/student/${studentId}`,
+    'EssayResponsesByExercise': (exerciseId) => `/essay-responses/exercise/${exerciseId}`,
 }
 
 export const apiUrl = (path) =>
@@ -30,14 +40,12 @@ export const apiUrl = (path) =>
 
 
 export const authApis = () => {
-    return axios.create({
-        baseURL: BASE_URL,
-        headers: {
-            'Authorization': `Bearer ${cookie.load('token')}`,
-            'Content-Type': 'application/json'
-        }
-    })
-}
+    const t = localStorage.getItem('token') || cookie.load('token'); // ưu tiên localStorage
+    const headers = { 'Content-Type': 'application/json' };
+    if (t) headers.Authorization = `Bearer ${t}`; // chỉ gắn khi thật sự có token
+    return axios.create({ baseURL: BASE_URL, headers });
+};
+
 export default axios.create({
     baseURL: BASE_URL
 });

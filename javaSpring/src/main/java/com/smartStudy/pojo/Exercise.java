@@ -71,6 +71,7 @@ public class Exercise implements Serializable {
     private Date createdAt;
     @JoinColumn(name = "chapter_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
+    @JsonIgnore
     private Chapter chapterId;
     public Exercise() {
     }

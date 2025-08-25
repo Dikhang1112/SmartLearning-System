@@ -12,9 +12,9 @@ public interface UserService extends UserDetailsService {
     User getUserById(int id);
     User getUserByMail(String email);
     User addUpdateUser(User u);
-
     User addUserClient(Map<String,String> params, MultipartFile avatar);
     void deleteUser (int id);
     boolean exitsByEmail(String mail);
     boolean authenticate (String email, String password);
+    String authenticateGoogle(String idToken) throws Exception;
 }

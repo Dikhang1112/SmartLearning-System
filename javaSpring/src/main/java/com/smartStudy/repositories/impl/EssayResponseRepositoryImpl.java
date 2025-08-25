@@ -1,19 +1,20 @@
 package com.smartStudy.repositories.impl;
 
+import com.smartStudy.dto.EssayReSimpleDTO;
 import com.smartStudy.pojo.EssayResponse;
 import com.smartStudy.pojo.EssayResponsePK;
 import com.smartStudy.pojo.ExerciseQuestion;
 import com.smartStudy.pojo.ExerciseSubmission;
 import com.smartStudy.repositories.EssayResponseRepository;
+
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+
+import jakarta.persistence.criteria.*;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,43 @@ public class EssayResponseRepositoryImpl implements EssayResponseRepository {
         cq.orderBy(cb.asc(r.get("exerciseQuestion").get("id"))); // tuỳ chọn
 
         return s.createQuery(cq).getResultList();
+    }
+
+    @Override
+    public List<EssayReSimpleDTO> findByExercise(Integer exerciseId) {
+        final String hql = """
+                    select new com.smartStudy.dto.EssayReSimpleDTO(
+                        r.answerEssay,
+                        new com.smartStudy.dto.QuestionDTO(
+                            q.id,
+                            q.orderIndex,
+                            q.question,
+                            q.solution,
+                            e.id           
+                        ),
+                        new com.smartStudy.dto.SubmissionSimpleDTO(
+                            es.id,
+                            es.status,
+                            es.feedback,
+                            es.grade,
+                            new com.smartStudy.dto.StudentSimpleDTO(
+                                st.id,
+                                new com.smartStudy.dto.UserSimpleDTO(u.name,u.email)  
+                            )
+                        )
+                    )
+                    from EssayResponse r
+                    join r.exerciseSubmission es
+                    join es.exerciseId e            
+                    join r.exerciseQuestion q   
+                    join es.student st
+                    join st.user u
+                    where e.id = :exerciseId
+                """;
+        return currentSession()
+                .createQuery(hql, EssayReSimpleDTO.class)
+                .setParameter("exerciseId", exerciseId)
+                .getResultList();
     }
 
     @Override

@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react'
 import { MyUserContext } from '../reducers/MyUserReducer';
 import { SidebarContext } from '../reducers/SidebarContext';
 import Apis, { endpoints } from '../configs/Apis';
-import '../static/teacherDashboard.css';
+import '../static/studentDashboard.css';
 import { useNavigate } from "react-router-dom";
 
 const TeacherDashboard = () => {
@@ -31,39 +31,33 @@ const TeacherDashboard = () => {
             }
         };
 
-        const fetchClasses = async () => {
+        const fetchClassesFromAssignments = async () => {
             setLoadingClasses(true);
             try {
-                const res = await Apis.get(endpoints.classes);
-                let classesData = res.data;
-
-                // /classes có thể trả về 1 object hoặc 1 mảng => chuẩn hoá thành mảng
-                if (!Array.isArray(classesData)) classesData = [classesData];
+                // Gọi mapping mới theo teacherId
+                const res = await Apis.get(endpoints.classAssignmentByTeacher(user.id));
+                const assignments = Array.isArray(res.data) ? res.data : [res.data];
 
                 const myClasses = [];
-                const mySubjectMap = {}; // { [subjectId]: Set<className> }
+                const mySubjectMap = {}; // { subjectId: Set<className> }
 
-                classesData.forEach(c => {
-                    const teacherList = Array.isArray(c.teacherList) ? c.teacherList : [];
-                    teacherList.forEach(t => {
-                        if (t?.userId === user.id) {
-                            // Ghi nhận lớp của giáo viên
-                            if (c?.className && !myClasses.includes(c.className)) {
-                                myClasses.push(c.className);
-                            }
-                            // Map subject -> className
-                            const subList = Array.isArray(t.subjectList) ? t.subjectList : [];
-                            subList.forEach(s => {
-                                if (s?.id != null) {
-                                    if (!mySubjectMap[s.id]) mySubjectMap[s.id] = new Set();
-                                    if (c?.className) mySubjectMap[s.id].add(c.className);
-                                }
-                            });
+                assignments.forEach(assign => {
+                    const className = assign?.className;
+                    if (className && !myClasses.includes(className)) myClasses.push(className);
+
+                    // Lấy teacher của assignment (giả định phần tử đầu tiên là teacher hiện tại)
+                    const teacher = Array.isArray(assign.teachers) ? assign.teachers[0] : null;
+                    const subs = teacher?.subjects || [];
+
+                    subs.forEach(s => {
+                        if (s?.id != null && className) {
+                            if (!mySubjectMap[s.id]) mySubjectMap[s.id] = new Set();
+                            mySubjectMap[s.id].add(className);
                         }
                     });
                 });
 
-                // Chuyển Set -> Array để render
+                // Convert Set -> Array
                 const mapAsArray = Object.fromEntries(
                     Object.entries(mySubjectMap).map(([k, v]) => [k, Array.from(v)])
                 );
@@ -71,17 +65,16 @@ const TeacherDashboard = () => {
                 setClassNames(myClasses);
                 setSubjectClassMap(mapAsArray);
             } catch (err) {
-                console.error("Error fetching classes:", err);
+                console.error("Error fetching class assignments by teacher:", err);
                 setClassNames([]);
                 setSubjectClassMap({});
             } finally {
                 setLoadingClasses(false);
             }
         };
-
         // gọi song song
         fetchSubjects();
-        fetchClasses();
+        fetchClassesFromAssignments();
     }, [user?.id]);
 
     const handleSubjectClick = (subjectId) => {

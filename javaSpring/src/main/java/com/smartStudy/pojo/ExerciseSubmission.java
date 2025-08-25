@@ -56,6 +56,7 @@ public class ExerciseSubmission implements Serializable {
     private List<McqResponse> mcqResponseList;
     @JoinColumn(name = "exercise_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
+    @JsonIgnore
     private Exercise exerciseId;
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", referencedColumnName = "user_id", nullable = false)

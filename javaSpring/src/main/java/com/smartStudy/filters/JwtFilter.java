@@ -9,8 +9,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.List;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,58 +20,52 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- *
  * @author AN515-57
  */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
-        String header = request.getHeader("Authorization");
-        if (header == null) {
-            header = request.getHeader("authorization"); // fallback (trường hợp proxy biến đổi)
-        }
+        final String uri = request.getRequestURI();
 
-        System.out.println("====== JwtFilter - Authorization Header: " + header);
-
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            try {
-                String username = JwtUtils.validateTokenAndGetUsername(token);
-                if (username != null) {
-                    // Bạn có thể load roles từ DB, tạm hardcode ROLE_ADMIN để đảm bảo hoạt động
-                    List<SimpleGrantedAuthority> authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_ADMIN")
-                    );
-
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-            } catch (Exception e) {
-                e.printStackTrace(); // log lỗi token nếu cần
-            }
-
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token không hợp lệ hoặc đã hết hạn.");
+        // 1) Bỏ qua các endpoint public
+        if (uri.equals("/api/google-login") || uri.equals("/api/login")
+                || uri.startsWith("/public/") || uri.startsWith("/swagger") || uri.startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        // Nếu không có token và đang truy cập /api/secure → trả lỗi
-        if (uri.startsWith(request.getContextPath() + "/api/secure")) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Thiếu header Authorization.");
+        // 2) Lấy header Authorization
+        String auth = request.getHeader("Authorization");
+        if (auth == null || !auth.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        // Cho phép các URL khác tiếp tục
+        // 3) Lấy token & loại các giá trị rác
+        String token = auth.substring(7).trim(); // sau "Bearer "
+        if (token.isBlank() || "undefined".equalsIgnoreCase(token) || "null".equalsIgnoreCase(token) || !token.contains(".")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 4) Validate JWT
+        String username = null;
+        try {
+            username = JwtUtils.validateTokenAndGetUsername(token);
+        } catch (Exception ignore) {
+            // Không chặn, cho qua để Security match 401 ở chỗ khác nếu cần
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            var authToken = new UsernamePasswordAuthenticationToken(
+                    username, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+
         filterChain.doFilter(request, response);
     }
 }
-

@@ -8,6 +8,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <App />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
   </React.StrictMode>
 );
 

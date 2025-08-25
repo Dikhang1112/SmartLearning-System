@@ -56,12 +56,6 @@ public class McqResponseServiceImpl  implements McqResponseService {
             throw new IllegalArgumentException("Answer not found: " + answerId);
 
         Exercise ex = sub.getExerciseId();
-        if (ex == null || q.getExerciseId() == null || !ex.getId().equals(q.getExerciseId())) {
-            throw new IllegalArgumentException("Question does not belong to this submission's exercise");
-        }
-        if (!ans.getQuestionId().equals(q.getId())) {
-            throw new IllegalArgumentException("Answer does not belong to the given question");
-        }
         // (Tuỳ) kiểm tra exercise type là MCQ
         if (ex.getType() != null && !"MCQ".equalsIgnoreCase(ex.getType())) {
             throw new IllegalStateException("Exercise is not MCQ; cannot save MCQ response");

@@ -90,6 +90,7 @@
 .login-btn {
     background: #176b87;
     color: #fff;
+    width: 150%;
     padding: 11px 0;
     border: none;
     border-radius: 7px;
@@ -117,4 +118,12 @@
     font-weight: bold;
     margin: 10px 0;
     text-align: center;
+}
+
+.login-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+
 }

@@ -6,10 +6,11 @@ import '../../static/header.css';
 // import Login and SignUp components
 import Login from '../../components/Login';
 import SignUp from '../../components/SignUp';
+import { FaBell, FaUserCircle } from 'react-icons/fa';
+
 
 const Header = () => {
   const user = useContext(MyUserContext);
-  const navigate = useNavigate();
   const dispatch = useContext(MyUserDispatchContext);
   const nav = useNavigate();
   // State for modal visibility
@@ -42,9 +43,13 @@ const Header = () => {
           </div>
           <div className="d-flex ms-auto">
             {user ? (
-              <button className="btn btn-outline-danger" onClick={handleLogout}>
-                Đăng xuất
-              </button>
+              <div className="d-flex align-items-center gap-3">
+                <FaBell className="header-icon-notice" />
+                <FaUserCircle className="header-icon" />
+                <button className="btn btn-outline-danger" onClick={handleLogout}>
+                  Đăng xuất
+                </button>
+              </div>
             ) : (
               <>
                 <button className="btn btn-outline-primary me-2" onClick={() => setShowLogin(true)}>

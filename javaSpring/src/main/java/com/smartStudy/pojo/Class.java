@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,17 +27,25 @@ import java.util.List;
     @NamedQuery(name = "Class.findByUpdatedAt", query = "SELECT c FROM Class c WHERE c.updatedAt = :updatedAt")})
 public class Class implements Serializable {
 
+    @Size(max = 255)
+    @Column(name = "class_name")
+    private String className;
+    @JoinTable(name = "student_class", joinColumns = {
+        @JoinColumn(name = "class_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "student_id", referencedColumnName = "user_id")})
+    @ManyToMany
+    private List<Student> studentList;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "class1")
+    @JsonIgnore
+    private List<TeacherAssignment> teacherAssignmentList;
+   
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
-    @Column(name = "class_name")
-    private String className;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -44,12 +53,9 @@ public class Class implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @ManyToMany(mappedBy = "classList", fetch = FetchType.EAGER)
-    private List<Teacher> teacherList;
-
-    @ManyToMany(mappedBy = "classList", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "classList",fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Student> studentList;
+    private List<Teacher> teacherList;
 
     @Transient
     private String teacherNames;
@@ -75,14 +81,6 @@ public class Class implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
     }
 
     public Date getCreatedAt() {
@@ -157,4 +155,22 @@ public class Class implements Serializable {
     public void setStudentNames(String studentNames) {
         this.studentNames = studentNames;
     }
+
+    public List<TeacherAssignment> getTeacherAssignmentList() {
+        return teacherAssignmentList;
+    }
+
+    public void setTeacherAssignmentList(List<TeacherAssignment> teacherAssignmentList) {
+        this.teacherAssignmentList = teacherAssignmentList;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+ 
 }

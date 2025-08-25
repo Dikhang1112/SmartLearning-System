@@ -8,10 +8,14 @@ import Welcome from './components/layouts/Welcome';
 import Sidebar from './components/layouts/Sidebar';
 import MyUserReducer, { MyUserContext, MyUserDispatchContext } from './reducers/MyUserReducer';
 import { SidebarProvider } from './reducers/SidebarContext';
+import Login from './components/Login';
 import StudentDashboard from './components/StudentDashboard';
 import TeacherDashboard from './components/TeacherDashboard';
 import ChapterSection from './components/ChapterSection';
+import StudyPlans from './components/StudyPlans';
+import Submission from './components/Submission';
 import Chapter from './components/Chapter';
+import SubmissionChapter from './components/SubmissionChapter';
 import { endpoints, authApis } from './configs/Apis';
 import cookie from 'react-cookies';
 import 'react-toastify/dist/ReactToastify.css';
@@ -34,7 +38,7 @@ function App() {
             avatar: res.data.avatar
           }
           dispatch({
-            type: "login",
+            type: "login" || "loginGoogle",
             payload: currentUser
           });
         } catch (err) {
@@ -60,6 +64,9 @@ function App() {
                 <Route path="/teacherDashBoard/" element={<TeacherDashboard />} />
                 <Route path="/chapters/:subjectId" element={<Chapter />} />
                 <Route path="/chapters/:subjectId/section/:chapterId" element={<ChapterSection />} />
+                <Route path="/studyPlans" element={<StudyPlans />} />
+                <Route path="/submission" element={<Submission />} />
+                <Route path="/submission/chapters" element={<SubmissionChapter />} />
               </Routes>
               <ToastContainer // Toast toàn cục
                 position="top-right"

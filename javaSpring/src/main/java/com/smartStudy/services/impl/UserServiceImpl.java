@@ -4,8 +4,12 @@ import com.cloudinary.utils.ObjectUtils;
 import com.smartStudy.pojo.User;
 import com.smartStudy.repositories.UserRepository;
 import com.smartStudy.services.UserService;
-
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.cloudinary.Cloudinary;
+import com.smartStudy.untils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -129,7 +133,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean exitsByEmail(String mail) {
         User u = userRepo.getUserByMail(mail);
-        return u!=null;
+        return u != null;
     }
 
     /**
@@ -145,6 +149,53 @@ public class UserServiceImpl implements UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
+    @Override
+    public String authenticateGoogle(String idToken) throws Exception {
+        System.out.println("Received Google idToken: " + idToken);
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList("1025697872094-s8go4slmfh2l1am2hlc7aoodiur5a13d.apps.googleusercontent.com"))
+                .build();
+
+        GoogleIdToken googleIdToken = verifier.verify(idToken);
+        if (googleIdToken == null) {
+            throw new Exception("Invalid Google ID token");
+        }
+
+        GoogleIdToken.Payload payload = googleIdToken.getPayload();
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+        String picture = (String) payload.get("picture");
+
+        User user = userRepo.getUserByMail(email);
+        LocalDateTime now = LocalDateTime.now();
+        Date currentDate = Date.from(now.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant());
+
+        if (user == null) {
+            user = new User();
+            user.setEmail(email);
+            user.setName(name);
+            user.setRole("STUDENT");
+            user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            user.setAvatar(picture);
+            user.setCreatedAt(currentDate);
+            user.setUpdatedAt(currentDate);
+            try {
+                this.userRepo.updateUser(user);
+            } catch (Exception e) {
+                System.out.println("Error inserting user: " + e.getMessage());
+                throw new Exception("Failed to insert user: " + e.getMessage());
+            }
+        } else {
+            user.setName(name);
+            user.setAvatar(picture);
+            user.setUpdatedAt(currentDate);
+            this.userRepo.updateUser(user);
+        }
+
+        String jwt = JwtUtils.generateToken(email);
+        System.out.println("Generated JWT: " + jwt);
+        return jwt;
+    }
     /**
      * Spring Security callback: dùng email làm username
      */

@@ -1,15 +1,17 @@
 // src/components/ModalSubmission.js
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "../static/submissionChapter.css";
 import "../static/modalSubmission.css"
 import Apis, { endpoints } from "../configs/Apis";
-import { showSuccess, showError } from "../utils/toast";
+import { showError, showSuccess, showWarning } from "../utils/toast";
+import { MyUserContext } from "../reducers/MyUserReducer"
 
 const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) => {
     const [grades, setGrades] = useState({});
     const [feedbacks, setFeedbacks] = useState({});
     const [saving, setSaving] = useState({}); // { [submissionId]: boolean }
     const [saveMsg, setSaveMsg] = useState({}); // { [submissionId]: "ok"/"err" }
+    const user = useContext(MyUserContext);
 
     // Khởi tạo/đồng bộ dữ liệu input khi mở modal hoặc khi responses đổi
     useEffect(() => {
@@ -28,9 +30,50 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
     const onGradeChange = (key, val) => setGrades((prev) => ({ ...prev, [key]: val }));
     const onFeedbackChange = (key, val) => setFeedbacks((prev) => ({ ...prev, [key]: val }));
 
+    // Lấy thông tin teacher từ context đăng nhập (tên + email)
+    const getTeacherMeta = (ctxUser) => {
+        const t = (ctxUser && (ctxUser.user || ctxUser)) || {};
+        const teacherEmail = t.email || "";
+        const teacherName =
+            t.name ||
+            [t.lastName, t.firstName].filter(Boolean).join(" ").trim() ||
+            "Teacher";
+        return { teacherEmail, teacherName };
+    };
+
+    // Gửi email: TEACHER → STUDENT (đã chấm bài)
+    const sendGradedEmail = async ({
+        teacherEmail,
+        teacherName,
+        studentEmail,
+        exerciseTitle,
+        submissionId,
+        grade,
+        feedback,
+    }) => {
+        const payload = {
+            studentEmail,   // người NHẬN
+            teacherEmail,   // Reply-To
+            teacherName,
+            exerciseTitle,
+            submissionId,
+            viewUrl: "",    // để backend tự build link student
+            grade: grade ?? null,
+            feedback: feedback ?? "",
+        };
+        try {
+            await Apis.post(endpoints.email, payload); // endpoints.email -> "/api/email/send"
+            return true;
+        } catch (err) {
+            console.error("Send graded email error:", err);
+            return false;
+        }
+    };
+
+    // Khi teacher bấm LƯU
     const handleSave = async (submission, question, student, key) => {
         const submissionId = submission?.id;
-        const exerciseId = question?.excerciseId; // chú ý: excerciseId theo DTO hiện tại
+        const exerciseId = question?.excerciseId; // theo DTO hiện tại
         const studentId = student?.userId ?? student?.id;
 
         if (!submissionId || !exerciseId || !studentId) {
@@ -39,30 +82,66 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
         }
 
         const url = `${endpoints.submissions}/${submissionId}?exerciseId=${exerciseId}&studentId=${studentId}`;
-        const gradeVal = grades[key];
+        const gradeValRaw = grades[key];
         const feedbackVal = feedbacks[key];
 
-        // body chỉ gồm grade, feedback
         const body = {
-            grade: gradeVal === "" ? null : Number(gradeVal),
+            grade: gradeValRaw === "" ? null : Number(gradeValRaw),
             feedback: feedbackVal ?? "",
         };
 
         try {
             setSaving((s) => ({ ...s, [submissionId]: true }));
             setSaveMsg((m) => ({ ...m, [submissionId]: "" }));
+
+            // 1) Lưu điểm/feedback
             await Apis.put(url, body);
-            showSuccess("Lưu điểm/feedback thành công");
+
+            // 2) Lấy dữ liệu để gửi mail
+            const usr = (student && student.user) || {};
+            const studentEmail = usr?.email || "";
+            const studentName =
+                usr?.name || [usr?.lastName, usr?.firstName].filter(Boolean).join(" ").trim() || `#${studentId}`;
+
+            const exerciseTitle =
+                (question && question.exerciseTitle) || (chapter && chapter.title) || "Bài tập";
+
+            const { teacherEmail, teacherName } = getTeacherMeta(user);
+
+            // 3) Gửi mail "đã chấm bài" cho student
+            const mailed = await sendGradedEmail({
+                teacherEmail,
+                teacherName,
+                studentEmail,
+                exerciseTitle,
+                submissionId,
+                grade: body.grade,
+                feedback: body.feedback,
+            });
+
+            // 3) Thông báo theo kết quả gửi mail
+            if (mailed) {
+                showSuccess("Lưu & gửi email thành công");
+                setSaveMsg((m) => ({
+                    ...m,
+                    [submissionId]: "Đã lưu"
+                }));
+            } else {
+                showWarning("Lưu thành công (gửi email lỗi)");
+                setSaveMsg((m) => ({
+                    ...m,
+                    [submissionId]: "Đã lưu (mail lỗi)"
+                }));
+            }
         } catch (e) {
             console.error("Save grade/feedback error:", e);
             showError("Lưu điểm/feedback thất bại");
+            setSaveMsg((m) => ({ ...m, [submissionId]: "Lưu thất bại" }));
         } finally {
             setSaving((s) => ({ ...s, [submissionId]: false }));
         }
     };
-
     if (!open) return null;
-
     return (
         <div className="sc-modal-backdrop" onClick={onClose}>
             <div className="sc-modal" onClick={(e) => e.stopPropagation()}>

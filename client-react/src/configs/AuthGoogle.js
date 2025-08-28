@@ -24,7 +24,7 @@ const AuthGoogle = ({ onLoginSuccess }) => {
                 });
                 window.google.accounts.id.renderButton(
                     document.getElementById("google-signin-btn"),
-                    { theme: "outline", size: "large", width: 50 }
+                    { theme: "outline", size: "large", width: 60 }
                 );
             } else {
                 console.error("Google SDK not loaded or accounts API not available");
@@ -61,7 +61,7 @@ const AuthGoogle = ({ onLoginSuccess }) => {
             alert("Đăng nhập bằng Google thất bại. Vui lòng thử lại! Chi tiết: " + (error.response?.data || error.message));
         }
     };
-    return <div id="google-signin-btn" style={{ marginLeft: 23, marginTop: 10 }} />;
+    return <div id="google-signin-btn" className="google-signin-btn" />;
 };
 
 export default AuthGoogle;

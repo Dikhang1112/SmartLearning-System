@@ -19,6 +19,7 @@ export const endpoints = {
     'submissions': '/submissions',
     'mcq-responses': '/mcq-responses',
     'essay-responses': '/essay-responses',
+    'email': 'email/send',
     // --- Class Assignments ---
     classAssignmentByTeacher: (teacherId) => `/assign/teacher/${teacherId}`,
     // --- Attachments ---

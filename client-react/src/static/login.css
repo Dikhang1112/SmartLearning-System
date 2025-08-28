@@ -127,3 +127,10 @@
     gap: 10px;
 
 }
+
+#google-signin-btn.google-signin-btn {
+    margin-left: 40px;
+    margin-top: 10px;
+    display: inline-block;
+    /* nếu cần canh hàng */
+}

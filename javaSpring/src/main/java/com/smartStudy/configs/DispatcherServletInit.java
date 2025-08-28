@@ -22,6 +22,7 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
                 ThymeleafConfig.class,
                 HibernateConfig.class,
                 SpringSecurityConfig.class,
+                EmailConfig.class,
                 DataInitializer.class
         };
     }

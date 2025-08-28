@@ -4,6 +4,7 @@
  */
 package com.smartStudy.repositories.impl;
 
+import com.smartStudy.pojo.Student;
 import com.smartStudy.statictis.SubjectStat;
 import com.smartStudy.pojo.Subject;
 import com.smartStudy.pojo.Teacher;
@@ -116,6 +117,15 @@ public class SubjectRepositoryImpl implements SubjectRepository {
                 String insSql = "INSERT INTO teacher_subject (teacher_id, subject_id) VALUES (:teacherId, :subjectId)";
                 session.createNativeQuery(insSql)
                         .setParameter("teacherId", t.getUserId()) // hoặc t.getId() tùy mapping
+                        .setParameter("subjectId", s.getId())
+                        .executeUpdate();
+            }
+        }
+        if (s.getStudentList() != null) {
+            for (Student su : s.getStudentList()) {
+                String insSql = "INSERT INTO student_subject (student_id, subject_id) VALUES (:studentId, :subjectId)";
+                session.createNativeQuery(insSql)
+                        .setParameter("studentId", su.getUserId()) // hoặc t.getId() tùy mapping
                         .setParameter("subjectId", s.getId())
                         .executeUpdate();
             }

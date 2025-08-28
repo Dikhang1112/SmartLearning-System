@@ -53,7 +53,7 @@ public class Class implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @ManyToMany(mappedBy = "classList",fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "classList",fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Teacher> teacherList;
 

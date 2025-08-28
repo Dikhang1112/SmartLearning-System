@@ -1,9 +1,8 @@
 package com.smartStudy.controllers;
 
+import com.smartStudy.pojo.*;
 import com.smartStudy.pojo.Subject;
-import com.smartStudy.pojo.Subject;
-import com.smartStudy.pojo.Teacher;
-import com.smartStudy.pojo.User;
+import com.smartStudy.services.StudentService;
 import com.smartStudy.services.SubjectService;
 import com.smartStudy.services.TeacherService;
 import com.smartStudy.services.UserService;
@@ -23,6 +22,8 @@ public class SubjectController {
     @Autowired
     private TeacherService teacherService;
 
+    @Autowired
+    private StudentService studentService;
     @GetMapping("/subjects")
     public String subjectListView(Model model, @RequestParam(required = false) Map<String, String> params) {
         List<Subject> subjects = subjectService.getSubjects(params);
@@ -47,6 +48,7 @@ public class SubjectController {
     public String addSubject(
             @ModelAttribute("subject") Subject subject,
             @RequestParam(value = "teacherIds", required = false) List<Integer> teacherIds,
+            @RequestParam(value = "studentIds", required = false) List<Integer> studentIds,
             Model model
     ) {
         List<Teacher> teachers = new ArrayList<>();
@@ -56,7 +58,15 @@ public class SubjectController {
                 if (t != null) teachers.add(t);
             }
         }
+        List<Student> students = new ArrayList<>();
+        if (studentIds != null) {
+            for (Integer id : studentIds) {
+                Student s = studentService.findByUserId(id);
+                if (s != null) students.add(s);
+            }
+        }
         subject.setTeacherList(teachers);
+        subject.setStudentList(students);
         subjectService.addOrUpdate(subject);
         System.out.println("Teachers sẽ gán vào subject: " + teachers);
         return "redirect:/subjects";

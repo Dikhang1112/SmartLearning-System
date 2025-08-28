@@ -71,6 +71,9 @@ public class Subject implements Serializable {
     @Transient
     private String teacherNames;
 
+    @Transient
+    private String studentNames;
+
     public Subject() {
     }
 
@@ -159,6 +162,8 @@ public class Subject implements Serializable {
         this.teacherNames = teacherNames;
     }
 
+    public String getStudentNames(){return studentNames;}
+    public void setStudentNames(String studentNames){this.studentNames = studentNames;}
 
     public MultipartFile getFile() {
         return file;

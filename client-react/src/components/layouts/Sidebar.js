@@ -27,7 +27,7 @@ const Sidebar = () => {
         return []; // chưa đăng nhập / role khác → không hiển thị gì
     }, [role]);
 
-    // ❗️Đặt return sau tất cả hooks
+    // ◆ Đặt return sau tất cả hooks
     if (!user) return null;
 
     const handleMenuClick = (path) => { if (path) navigate(path); };
@@ -43,6 +43,7 @@ const Sidebar = () => {
                     <div
                         key={idx}
                         className="sidebar-item"
+                        data-tooltip={item.title}
                         onClick={() => handleMenuClick(item.path)}
                         style={{ cursor: 'pointer' }}
                     >

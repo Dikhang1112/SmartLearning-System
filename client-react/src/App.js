@@ -8,7 +8,6 @@ import Welcome from './components/layouts/Welcome';
 import Sidebar from './components/layouts/Sidebar';
 import MyUserReducer, { MyUserContext, MyUserDispatchContext } from './reducers/MyUserReducer';
 import { SidebarProvider } from './reducers/SidebarContext';
-import Login from './components/Login';
 import StudentDashboard from './components/StudentDashboard';
 import TeacherDashboard from './components/TeacherDashboard';
 import ChapterSection from './components/ChapterSection';

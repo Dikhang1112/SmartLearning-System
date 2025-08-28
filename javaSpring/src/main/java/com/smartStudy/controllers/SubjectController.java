@@ -65,7 +65,7 @@ public class SubjectController {
                 if (s != null) students.add(s);
             }
         }
-        subject.setTeacherList(teachers);
+            subject.setTeacherList(teachers);
         subject.setStudentList(students);
         subjectService.addOrUpdate(subject);
         System.out.println("Teachers sẽ gán vào subject: " + teachers);

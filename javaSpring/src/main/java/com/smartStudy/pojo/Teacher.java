@@ -5,6 +5,7 @@
 package com.smartStudy.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.json.Json;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,6 +24,7 @@ import java.util.List;
 public class Teacher implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "teacherId")
+    @JsonIgnore
     private List<Notification> notificationList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "teacher")
     @JsonIgnore
@@ -37,6 +39,7 @@ public class Teacher implements Serializable {
         @JoinColumn(name = "teacher_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
         @JoinColumn(name = "subject_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Subject> subjectList;
 
     @JoinTable(name = "teacher_class", joinColumns = {
@@ -48,7 +51,6 @@ public class Teacher implements Serializable {
 
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     @OneToOne(optional = false)
-    @JsonIgnore
     private User user;
 
     public Teacher() {

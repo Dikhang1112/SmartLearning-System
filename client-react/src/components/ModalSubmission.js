@@ -1,47 +1,44 @@
 // src/components/ModalSubmission.js
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo } from "react";
 import "../static/submissionChapter.css";
-import "../static/modalSubmission.css"
+import "../static/modalSubmission.css";
 import Apis, { endpoints } from "../configs/Apis";
 import { showError, showSuccess, showWarning } from "../utils/toast";
-import { MyUserContext } from "../reducers/MyUserReducer"
+import { MyUserContext } from "../reducers/MyUserReducer";
 
 const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) => {
-    const [grades, setGrades] = useState({});
-    const [feedbacks, setFeedbacks] = useState({});
-    const [saving, setSaving] = useState({}); // { [submissionId]: boolean }
-    const [saveMsg, setSaveMsg] = useState({}); // { [submissionId]: "ok"/"err" }
+    const [grades, setGrades] = useState({});      // keyed by submissionId
+    const [feedbacks, setFeedbacks] = useState({});// keyed by submissionId
+    const [saving, setSaving] = useState({});      // { [submissionId]: boolean }
+    const [saveMsg, setSaveMsg] = useState({});    // { [submissionId]: "ok"/"err" }
+    const [gradedLocal, setGradedLocal] = useState({}); // { [submissionId]: "GRADED" }
     const user = useContext(MyUserContext);
 
-    // Khởi tạo/đồng bộ dữ liệu input khi mở modal hoặc khi responses đổi
+    // Khởi tạo state theo submissionId (mỗi student 1 submission)
     useEffect(() => {
         if (!open) return;
         const nextGrades = {};
         const nextFeedbacks = {};
-        (responses || []).forEach((it, idx) => {
-            const key = it?.submission?.id ?? idx;
-            nextGrades[key] = nextGrades[key] ?? (it?.submission?.grade ?? "");
-            nextFeedbacks[key] = nextFeedbacks[key] ?? (it?.submission?.feedback ?? "");
+
+        (responses || []).forEach((it) => {
+            const sid = it?.submission?.id;
+            if (!sid) return;
+            if (nextGrades[sid] === undefined) nextGrades[sid] = it?.submission?.grade ?? "";
+            if (nextFeedbacks[sid] === undefined) nextFeedbacks[sid] = it?.submission?.feedback ?? "";
         });
+
         setGrades(nextGrades);
         setFeedbacks(nextFeedbacks);
+        setGradedLocal({});
     }, [open, responses]);
 
-    const onGradeChange = (key, val) => setGrades((prev) => ({ ...prev, [key]: val }));
-    const onFeedbackChange = (key, val) => setFeedbacks((prev) => ({ ...prev, [key]: val }));
+    const onGradeChange = (submissionId, val) =>
+        setGrades((prev) => ({ ...prev, [submissionId]: val }));
 
-    // Lấy thông tin teacher từ context đăng nhập (tên + email)
-    const getTeacherMeta = (ctxUser) => {
-        const t = (ctxUser && (ctxUser.user || ctxUser)) || {};
-        const teacherEmail = t.email || "";
-        const teacherName =
-            t.name ||
-            [t.lastName, t.firstName].filter(Boolean).join(" ").trim() ||
-            "Teacher";
-        return { teacherEmail, teacherName };
-    };
+    const onFeedbackChange = (submissionId, val) =>
+        setFeedbacks((prev) => ({ ...prev, [submissionId]: val }));
 
-    // Gửi email: TEACHER → STUDENT (đã chấm bài)
+    // Email Teacher -> Student (đã chấm)
     const sendGradedEmail = async ({
         teacherEmail,
         teacherName,
@@ -52,17 +49,17 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
         feedback,
     }) => {
         const payload = {
-            studentEmail,   // người NHẬN
-            teacherEmail,   // Reply-To
+            studentEmail,
+            teacherEmail,
             teacherName,
             exerciseTitle,
             submissionId,
-            viewUrl: "",    // để backend tự build link student
+            viewUrl: "",
             grade: grade ?? null,
             feedback: feedback ?? "",
         };
         try {
-            await Apis.post(endpoints.email, payload); // endpoints.email -> "/api/email/send"
+            await Apis.post(endpoints.email, payload);
             return true;
         } catch (err) {
             console.error("Send graded email error:", err);
@@ -70,69 +67,123 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
         }
     };
 
-    // Khi teacher bấm LƯU
-    const handleSave = async (submission, question, student, key) => {
+    // Lấy meta teacher từ context
+    const getTeacherMeta = (ctxUser) => {
+        const t = (ctxUser && (ctxUser.user || ctxUser)) || {};
+        const teacherId = t.userId ?? t.id;
+        const teacherEmail = t.email || "";
+        const teacherName =
+            t.name || [t.lastName, t.firstName].filter(Boolean).join(" ").trim() || "Teacher";
+        return { teacherId, teacherEmail, teacherName };
+    };
+
+    // Notification cho student
+    const postNotification = async ({
+        studentId,
+        teacherId,
+        exerciseTitle,
+        submissionId,
+        grade,
+        feedback,
+    }) => {
+        const msg =
+            `Mã bài nộp #${submissionId}` +
+            (grade != null ? ` | Điểm: ${grade}` : "") +
+            (feedback ? ` | Nhận xét: ${feedback}` : "");
+        const payload = {
+            studentId,
+            teacherId,
+            type: "SUBMISSION",
+            title: `Bài đã được chấm: ${exerciseTitle || "Bài tập"}`,
+            message: msg,
+            isReaded: false,
+        };
+        try {
+            await Apis.post(endpoints.notifications, payload);
+            return true;
+        } catch (err) {
+            console.error("Post notification error:", err);
+            return false;
+        }
+    };
+    const locallyGRADED = useMemo(() => {
+        return new Set(
+            Object.entries(gradedLocal)
+                .filter(([_, st]) => st === "GRADED")
+                .map(([id]) => Number(id))
+        );
+    }, [gradedLocal]);
+
+    // Lưu điểm/feedback + gửi email + notification
+    const handleSave = async (submission, firstQuestion, student) => {
         const submissionId = submission?.id;
-        const exerciseId = question?.excerciseId; // theo DTO hiện tại
+        const exerciseId = firstQuestion?.excerciseId; // theo DTO hiện tại
         const studentId = student?.userId ?? student?.id;
 
         if (!submissionId || !exerciseId || !studentId) {
-            setSaveMsg((m) => ({ ...m, [submissionId || key]: "Thiếu submissionId/exerciseId/studentId" }));
+            setSaveMsg((m) => ({
+                ...m,
+                [submissionId || "unknown"]: "Thiếu submissionId/exerciseId/studentId",
+            }));
             return;
         }
 
         const url = `${endpoints.submissions}/${submissionId}?exerciseId=${exerciseId}&studentId=${studentId}`;
-        const gradeValRaw = grades[key];
-        const feedbackVal = feedbacks[key];
+        const gradeValRaw = grades[submissionId];
+        const feedbackVal = feedbacks[submissionId];
 
         const body = {
             grade: gradeValRaw === "" ? null : Number(gradeValRaw),
             feedback: feedbackVal ?? "",
+            status: "GRADED", // ✅ cập nhật trạng thái toàn submission
         };
 
         try {
             setSaving((s) => ({ ...s, [submissionId]: true }));
             setSaveMsg((m) => ({ ...m, [submissionId]: "" }));
 
-            // 1) Lưu điểm/feedback
+            // 1) Lưu điểm/feedback + status
             await Apis.put(url, body);
 
-            // 2) Lấy dữ liệu để gửi mail
+            // 2) Chuẩn bị dữ liệu chung
             const usr = (student && student.user) || {};
             const studentEmail = usr?.email || "";
-            const studentName =
-                usr?.name || [usr?.lastName, usr?.firstName].filter(Boolean).join(" ").trim() || `#${studentId}`;
-
             const exerciseTitle =
-                (question && question.exerciseTitle) || (chapter && chapter.title) || "Bài tập";
+                (firstQuestion && firstQuestion.exerciseTitle) || (chapter && chapter.title) || "Bài tập";
+            const { teacherId, teacherEmail, teacherName } = getTeacherMeta(user);
 
-            const { teacherEmail, teacherName } = getTeacherMeta(user);
+            // 3) Chạy song song: gửi email + post notification
+            const [mailed, notified] = await Promise.all([
+                sendGradedEmail({
+                    teacherEmail,
+                    teacherName,
+                    studentEmail,
+                    exerciseTitle,
+                    submissionId,
+                    grade: body.grade,
+                    feedback: body.feedback,
+                }),
+                postNotification({
+                    studentId,
+                    teacherId,
+                    exerciseTitle,
+                    submissionId,
+                    grade: body.grade,
+                    feedback: body.feedback,
+                }),
+            ]);
 
-            // 3) Gửi mail "đã chấm bài" cho student
-            const mailed = await sendGradedEmail({
-                teacherEmail,
-                teacherName,
-                studentEmail,
-                exerciseTitle,
-                submissionId,
-                grade: body.grade,
-                feedback: body.feedback,
-            });
+            // 4) Cập nhật UI & toast
+            setGradedLocal((prev) => ({ ...prev, [submissionId]: "GRADED" }));
 
-            // 3) Thông báo theo kết quả gửi mail
             if (mailed) {
                 showSuccess("Lưu & gửi email thành công");
-                setSaveMsg((m) => ({
-                    ...m,
-                    [submissionId]: "Đã lưu"
-                }));
+                setSaveMsg((m) => ({ ...m, [submissionId]: "Đã lưu" }));
             } else {
                 showWarning("Lưu thành công (gửi email lỗi)");
-                setSaveMsg((m) => ({
-                    ...m,
-                    [submissionId]: "Đã lưu (mail lỗi)"
-                }));
+                setSaveMsg((m) => ({ ...m, [submissionId]: "Đã lưu (mail lỗi)" }));
             }
+            if (!notified) showWarning("Gửi thông báo lỗi");
         } catch (e) {
             console.error("Save grade/feedback error:", e);
             showError("Lưu điểm/feedback thất bại");
@@ -141,7 +192,40 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
             setSaving((s) => ({ ...s, [submissionId]: false }));
         }
     };
+
     if (!open) return null;
+
+    // ======= Gom nhóm theo STUDENT, hiển thị các câu hỏi/đáp án; input GRADE/FEEDBACK gom 1 chỗ =======
+    // Giả sử locallyGRADED là Set<number> chứa các submissionId đã GRADED tại chỗ
+    const groupedByStudent = Object.values(
+        (responses || [])
+            .filter((it) => {
+                const sub = it?.submission;
+                if (!sub || sub.id == null) return false;
+                const id = Number(sub.id);
+                const gradedServer = String(sub.status || "").toUpperCase() === "GRADED";
+                const gradedLocalFlag = locallyGRADED.has(id);
+                return !(gradedServer || gradedLocalFlag);
+            })
+            .reduce((acc, it) => {
+                const sub = it.submission || {};
+                const stu = sub.student || {};
+                const sid = stu.userId ?? stu.id;
+                if (sid == null) return acc;
+                if (!acc[sid]) acc[sid] = { student: stu, items: [] };
+                acc[sid].items.push(it);
+                return acc;
+            }, {})
+    ).map((grp) => {
+        const itemsSorted = grp.items.slice().sort((a, b) => {
+            const ai = a?.question?.orderIndex ?? 0;
+            const bi = b?.question?.orderIndex ?? 0;
+            return ai - bi;
+        });
+        return { ...grp, items: itemsSorted };
+    });
+    const isEmptyAfterFilter = !loading && !error && groupedByStudent.length === 0;
+
     return (
         <div className="sc-modal-backdrop" onClick={onClose}>
             <div className="sc-modal" onClick={(e) => e.stopPropagation()}>
@@ -165,118 +249,121 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
 
                     {!loading && !error && (
                         <>
-                            {!responses || responses.length === 0 ? (
-                                <div className="no-submissions">Chưa có bài tự luận nào.</div>
+                            {isEmptyAfterFilter ? (
+                                <div className="no-submissions text-center py-4">
+                                    <h6 className="mb-1">Không còn bài nào cần chấm</h6>
+                                </div>
                             ) : (
                                 <ul className="submission-list">
-                                    {Object.entries(
-                                        responses
-                                            .filter((it) => it.submission?.status === "COMPLETED")
-                                            .reduce((acc, it) => {
-                                                const qid = it.question?.id;
-                                                if (!qid) return acc;
-                                                if (!acc[qid]) acc[qid] = [];
-                                                acc[qid].push(it);
-                                                return acc;
-                                            }, {})
-                                    ).map(([questionId, groupedResponses]) => {
-                                        const q = groupedResponses[0]?.question || {};
+                                    {groupedByStudent.map((group, gi) => {
+                                        const first = group.items[0];
+                                        const sub = first?.submission || {};
+                                        const firstQuestion = first?.question || {};
+                                        const sid = sub.id;
+                                        const isSaving = !!saving[sid];
+
+                                        const stu = group.student || {};
+                                        const usr = stu.user || {};
+                                        const studentName = usr?.name || `#${stu.userId ?? ""}`;
+                                        const studentEmail = usr?.email || "Chưa có email";
+
+                                        const statusShown = gradedLocal[sid] || sub.status || "Chưa xác định";
 
                                         return (
-                                            <li key={questionId} className="submission-item">
-                                                {/* Câu hỏi Header */}
-                                                <div className="question-header">
-                                                    Câu {q.orderIndex ?? "-"}: {q.question || "(Không có nội dung câu hỏi)"}
+                                            <li key={`stu-${stu.userId ?? gi}`} className="submission-item">
+                                                {/* Header học sinh + trạng thái bài nộp */}
+                                                <div className="question-header d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        Học sinh: <b>{studentName}</b> &nbsp;—&nbsp; Email: {studentEmail}
+                                                    </div>
+                                                    <div>
+                                                        <span
+                                                            className={`status-badge ${statusShown === "COMPLETED"
+                                                                ? "status-completed"
+                                                                : "status-pending"
+                                                                }`}
+                                                        >
+                                                            {statusShown}
+                                                        </span>
+                                                    </div>
                                                 </div>
 
-                                                {groupedResponses.map((it, idx) => {
-                                                    const sub = it.submission || {};
-                                                    const stu = sub.student || {};
-                                                    const usr = stu.user || {};
-                                                    const key = sub.id ?? `${questionId}-${idx}`;
-                                                    const isSaving = !!saving[sub.id];
+                                                {/* Danh sách câu hỏi & câu trả lời */}
+                                                <div className="student-response-block">
+                                                    {group.items.map((it, idx) => {
+                                                        const q = it.question || {};
+                                                        return (
+                                                            <div key={`q-${sid}-${q.id ?? idx}`}>
+                                                                <div className="student-info-grid">
+                                                                    <div className="student-info-item">
+                                                                        <span className="student-info-label">Câu hỏi</span>
+                                                                        <span className="student-info-value">
+                                                                            Câu {q.orderIndex ?? "-"}: {q.question || "(Không có nội dung câu hỏi)"}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
 
-                                                    return (
-                                                        <div key={`${key}`} className="student-response-block">
-                                                            {/* Thông tin học sinh Grid */}
-                                                            <div className="student-info-grid">
-                                                                <div className="student-info-item">
-                                                                    <span className="student-info-label">Học sinh</span>
-                                                                    <span className="student-info-value">
-                                                                        {usr?.name || `#${stu.userId ?? ""}`}
-                                                                    </span>
+                                                                <div className="answer-section">
+                                                                    <span className="answer-label">Trả lời:</span>
+                                                                    <div className="answer-content">
+                                                                        {it.answerEssay || "(Chưa có câu trả lời)"}
+                                                                    </div>
                                                                 </div>
-                                                                <div className="student-info-item">
-                                                                    <span className="student-info-label">Email</span>
-                                                                    <span className="student-info-value">
-                                                                        {usr?.email || "Chưa có email"}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="student-info-item">
-                                                                    <span className="student-info-label">Trạng thái</span>
-                                                                    <span className={`status-badge ${sub?.status === 'COMPLETED' ? 'status-completed' : 'status-pending'}`}>
-                                                                        {sub?.status || "Chưa xác định"}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
 
-                                                            {/* Bài làm */}
-                                                            <div className="answer-section">
-                                                                <span className="answer-label">Trả lời:</span>
-                                                                <div className="answer-content">
-                                                                    {it.answerEssay || "(Chưa có câu trả lời)"}
-                                                                </div>
+                                                                <hr className="submission-divider" />
                                                             </div>
+                                                        );
+                                                    })}
+                                                </div>
 
-                                                            {/* Grade và Feedback Grid */}
-                                                            <div className="grade-feedback-grid">
-                                                                <div className="grade-section">
-                                                                    <label className="input-label">Điểm</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        step="0.25"
-                                                                        min="0"
-                                                                        max="10"
-                                                                        value={grades[key] ?? ""}
-                                                                        onChange={(e) => onGradeChange(key, e.target.value)}
-                                                                        className="grade-input"
-                                                                        disabled={isSaving}
-                                                                        placeholder="Nhập điểm (0-10)"
-                                                                    />
-                                                                </div>
-                                                                <div className="feedback-section">
-                                                                    <label className="input-label">Feedback</label>
-                                                                    <textarea
-                                                                        rows={3}
-                                                                        value={feedbacks[key] ?? ""}
-                                                                        onChange={(e) => onFeedbackChange(key, e.target.value)}
-                                                                        className="feedback-textarea"
-                                                                        placeholder="Nhận xét cho bài làm này…"
-                                                                        disabled={isSaving}
-                                                                    />
-                                                                </div>
-                                                            </div>
+                                                {/* ✅ Ô nhập Điểm/Feedback chung cho toàn submission của student này */}
+                                                <div className="grade-feedback-grid">
+                                                    <div className="grade-section">
+                                                        <label className="input-label">Điểm</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.25"
+                                                            min="0"
+                                                            max="10"
+                                                            value={grades[sid] ?? ""}
+                                                            onChange={(e) => onGradeChange(sid, e.target.value)}
+                                                            className="grade-input"
+                                                            disabled={isSaving}
+                                                            placeholder="Nhập điểm (0-10)"
+                                                        />
+                                                    </div>
+                                                    <div className="feedback-section">
+                                                        <label className="input-label">Feedback</label>
+                                                        <textarea
+                                                            rows={3}
+                                                            value={feedbacks[sid] ?? ""}
+                                                            onChange={(e) => onFeedbackChange(sid, e.target.value)}
+                                                            className="feedback-textarea"
+                                                            placeholder="Nhận xét chung cho bài nộp…"
+                                                            disabled={isSaving}
+                                                        />
+                                                    </div>
+                                                </div>
 
-                                                            {/* Save Action */}
-                                                            <div className="save-action">
-                                                                <button
-                                                                    type="button"
-                                                                    className="save-button"
-                                                                    onClick={() => handleSave(sub, q, stu, key)}
-                                                                    disabled={isSaving}
-                                                                >
-                                                                    {isSaving ? "Đang lưu..." : "Lưu"}
-                                                                </button>
-                                                                {saveMsg[sub.id] && (
-                                                                    <span className={`save-message ${saveMsg[sub.id] === "Đã lưu" ? 'save-success' : 'save-error'}`}>
-                                                                        {saveMsg[sub.id]}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <hr className="submission-divider" />
-                                                        </div>
-                                                    );
-                                                })}
+                                                {/* Action */}
+                                                <div className="save-action">
+                                                    <button
+                                                        type="button"
+                                                        className="save-button"
+                                                        onClick={() => handleSave(sub, firstQuestion, stu)}
+                                                        disabled={isSaving}
+                                                    >
+                                                        {isSaving ? "Đang lưu..." : "Lưu"}
+                                                    </button>
+                                                    {saveMsg[sid] && (
+                                                        <span
+                                                            className={`save-message ${saveMsg[sid] === "Đã lưu" ? "save-success" : "save-error"
+                                                                }`}
+                                                        >
+                                                            {saveMsg[sid]}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </li>
                                         );
                                     })}

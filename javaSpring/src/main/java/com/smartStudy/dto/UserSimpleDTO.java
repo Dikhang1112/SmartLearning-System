@@ -1,6 +1,7 @@
 package com.smartStudy.dto;
 
 public class UserSimpleDTO {
+    private Integer id;
     private String name;
     private String email;
 
@@ -20,4 +21,6 @@ public class UserSimpleDTO {
     public void setEmail(String email) {
         this.email = email;
     }
+    public Integer getId() {return id;}
+    public void setId(Integer id) {this.id = id;}
 }

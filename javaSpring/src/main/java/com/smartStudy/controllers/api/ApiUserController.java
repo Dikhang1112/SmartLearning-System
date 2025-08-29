@@ -77,6 +77,33 @@ public class ApiUserController {
         }
     }
 
+    @PutMapping(path = "/users/{userId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateUser(
+            @PathVariable("userId") int id,
+            @RequestParam Map<String, String> params,
+            @RequestParam(value = "avatar", required = false) MultipartFile avatar) {
+
+        User existingUser = this.userService.getUserById(id);
+        if (existingUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User with ID " + id + " not found");
+        }
+
+        // Tạo user mới để map params vào
+        User u = new User();
+        u.setId(id);
+        u.setName(params.get("name"));
+        u.setEmail(params.get("email"));
+        u.setPassword(params.get("password")); // Service sẽ tự giữ hoặc encode
+        u.setRole(params.get("role"));
+        u.setFile(avatar);
+
+        User updatedUser = this.userService.addUpdateUser(u);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @RequestMapping("/auth/user")
     @ResponseBody
     @CrossOrigin

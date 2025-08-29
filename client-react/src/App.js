@@ -19,6 +19,7 @@ import { endpoints, authApis } from './configs/Apis';
 import cookie from 'react-cookies';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import Profile from './components/Profile';
 
 function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
@@ -66,6 +67,7 @@ function App() {
                 <Route path="/studyPlans" element={<StudyPlans />} />
                 <Route path="/submission" element={<Submission />} />
                 <Route path="/submission/chapters" element={<SubmissionChapter />} />
+                <Route path="/profile/:userId" element={<Profile />} />
               </Routes>
               <ToastContainer // Toast toàn cục
                 position="top-right"

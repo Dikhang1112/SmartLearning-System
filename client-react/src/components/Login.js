@@ -4,6 +4,7 @@ import Apis, { endpoints, authApis } from '../configs/Apis';
 import { MyUserDispatchContext } from '../reducers/MyUserReducer';
 import { MyUserContext } from '../reducers/MyUserReducer';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import cookie from 'react-cookies';
 import AuthGoogle from '../configs/AuthGoogle';
 
@@ -11,6 +12,7 @@ const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false); // 👈 state ẩn/hiện
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const dispatch = useContext(MyUserDispatchContext);
@@ -75,7 +77,7 @@ const Login = ({ onLoginSuccess }) => {
             if (err.response && err.response.status === 400) {
                 setError('Email hoặc mật khẩu không đúng!');
             } else {
-                setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                setError('Email hoặc mật khẩu không đúng!');
             }
             setSuccess('');
         } finally {
@@ -135,16 +137,24 @@ const Login = ({ onLoginSuccess }) => {
                         autoFocus
                     />
                 </div>
-                <div className="input-group">
+                <div className="input-group password-group">
                     <label htmlFor="password">Mật khẩu</label>
-                    <input
-                        type="password"
-                        id="password"
-                        className="login-input"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
-                    />
+                    <div className="password-wrapper">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            id="password"
+                            className="login-input"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
+                        />
+                        <span
+                            className="toggle-password"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </span>
+                    </div>
                 </div>
                 {error && <div className="login-error">{error}</div>}
                 {success && <div className="login-success">{success}</div>}

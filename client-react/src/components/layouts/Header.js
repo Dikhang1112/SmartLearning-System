@@ -8,6 +8,7 @@ import Login from "../../components/Login";
 import SignUp from "../../components/SignUp";
 import { FaBell, FaUserCircle } from "react-icons/fa";
 import Notification from "../../components/Notification";
+import cookie from 'react-cookies';
 import Apis, { endpoints } from "../../configs/Apis";
 
 const Header = () => {
@@ -29,20 +30,34 @@ const Header = () => {
     setShowLogin(false);
     setShowSignUp(false);
   };
-
   const handleLogout = () => {
+    try {
+      // dọn local token (phòng hờ — reducer cũng đã làm)
+      localStorage.removeItem("token");
+      cookie.remove("token", { path: "/" });
+      // gỡ header Authorization khỏi axios instance
+      if (Apis?.defaults?.headers?.common?.Authorization) {
+        delete Apis.defaults.headers.common.Authorization;
+      }
+    } catch (_) { }
+    // xóa state đăng nhập
     dispatch({ type: "logout" });
     nav("/");
     setShowLogin(false);
     setShowSignUp(false);
+    setShowNotif(false);
+    setNotifItems([]);
+    setBadgeCount(0);
   };
-
   // Lấy studentId từ context (tuỳ DTO: user.userId hoặc user.id)
   const getStudentId = () => {
     const u = (user && (user.user || user)) || {};
     return u.userId ?? u.id ?? null;
   };
-
+  const handleUserProfile = () => {
+    const id = getStudentId();
+    if (id) nav(`/profile/${id}`);
+  };
   // ✅ Đếm số thông báo CHƯA ĐỌC (isReaded=false)
   const fetchUnreadCount = async () => {
     const sid = getStudentId();
@@ -122,12 +137,9 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [showNotif]);
 
-  // ✅ Khởi động & polling badge mỗi 15s, và khi user thay đổi
+  // ✅ Khởi động & polling badge user thay đổi
   useEffect(() => {
     fetchUnreadCount();
-    const t = setInterval(fetchUnreadCount, 15000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (
@@ -173,7 +185,7 @@ const Header = () => {
                   />
                 </div>
 
-                <FaUserCircle className="header-icon" />
+                <FaUserCircle className="header-icon" onClick={handleUserProfile} />
                 <button className="btn btn-outline-danger" onClick={handleLogout}>
                   Đăng xuất
                 </button>
@@ -218,5 +230,4 @@ const Header = () => {
     </>
   );
 };
-
 export default Header;

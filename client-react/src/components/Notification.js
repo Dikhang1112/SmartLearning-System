@@ -47,7 +47,7 @@ const Notification = ({ open, items = [], loading = false, onClose, onMarkAllRea
         if (typeof onMarkAllRead === 'function') onMarkAllRead();
         markedRef.current = true;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, loading]);          // ⬅️ KHÔNG đưa onMarkAllRead vào deps để tránh vòng lặp
+    }, [open, loading]);
 
     if (!open) return null;
     return (

@@ -4,6 +4,8 @@ import Apis, { endpoints } from '../configs/Apis';
 import { useNavigate } from 'react-router-dom';
 import Login from './Login';
 import '../static/login.css'; // Import your login.css
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -16,6 +18,7 @@ const SignUp = () => {
     const [showLogin, setShowLogin] = useState(false);
     const [showSignUp, setShowSignUp] = useState(true);
     const [avatarURL, setAvatarURL] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const nav = useNavigate();
 
     // Dùng useRef cho input file
@@ -144,19 +147,25 @@ const SignUp = () => {
                             />
                         </div>
                     </div>
-
-                    <div className="input-group">
+                    <div className="input-group password-group">
                         <label htmlFor="signup-password">Mật khẩu</label>
-                        <input
-                            type="password"
-                            id="signup-password"
-                            className="signup-input"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="password-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="signup-password"
+                                className="signup-input"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                required
+                            />
+                            <span
+                                className="toggle-password"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </span>
+                        </div>
                     </div>
-
                     <div className="input-group">
                         <label htmlFor="signup-role">Vai trò</label>
                         <select

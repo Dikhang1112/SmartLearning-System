@@ -182,6 +182,15 @@ public class Subject implements Serializable {
         this.teacherAssignmentList = teacherAssignmentList;
     }
 
+
+    public List<Student> getStudentList() {
+        return studentList;
+    }
+
+    public void setStudentList(List<Student> studentList) {
+        this.studentList = studentList;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -204,13 +213,5 @@ public class Subject implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<Student> getStudentList() {
-        return studentList;
-    }
-
-    public void setStudentList(List<Student> studentList) {
-        this.studentList = studentList;
     }
 }

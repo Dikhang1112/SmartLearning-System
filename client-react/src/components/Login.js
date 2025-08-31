@@ -19,10 +19,20 @@ const Login = ({ onLoginSuccess }) => {
     const dispatch = useContext(MyUserDispatchContext);
     const user = useContext(MyUserContext);
     const role = user?.role || 'STUDENT'; // mặc định readonly nếu chưa đăng nhập
-    const canManage = role === 'TEACHER';
     const nav = useNavigate();
     const [showForget, setShowForget] = useState(false); // 👈 state mở modal
 
+    const initializeChapterProgress = async (studentId) => {
+        try {
+            const url = endpoints['chapter-progress'] + `/initialize/${studentId}`;
+            console.log('Calling API:', url);
+            await authApis().post(url);
+            console.log('ChapterProgress initialized successfully');
+        } catch (err) {
+            console.error('Error initializing ChapterProgress:', err);
+            setError('Không thể khởi tạo tiến độ học tập. Vui lòng thử lại.');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -67,6 +77,7 @@ const Login = ({ onLoginSuccess }) => {
                 });
                 if (onLoginSuccess) onLoginSuccess(); // Tắt modal khi login thành công!
                 if (userInfo.role === "STUDENT") {
+                    await initializeChapterProgress(userInfo.id);
                     nav('/studentDashboard');
                 }
                 else if (userInfo.role === "TEACHER") {
@@ -87,7 +98,6 @@ const Login = ({ onLoginSuccess }) => {
             setLoading(false);
         }
     };
-
     const handleGoogleLoginSuccess = async (token) => {
         setLoading(true);
         setError('');
@@ -111,6 +121,7 @@ const Login = ({ onLoginSuccess }) => {
             setError('');
             if (onLoginSuccess) onLoginSuccess(); // Tắt modal khi login thành công
             if (userInfo.role === "STUDENT") {
+                await initializeChapterProgress(userInfo.id);
                 nav('/studentDashboard');
             } else if (userInfo.role === "TEACHER") {
                 nav('/teacherDashboard');

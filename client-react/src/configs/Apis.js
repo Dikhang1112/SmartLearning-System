@@ -23,6 +23,7 @@ export const endpoints = {
     'notifications': '/notifications',
     'forgot-pass': '/auth/forgot-password',
     'reset-pass': '/auth/reset-password',
+    'chapter-progress': '/chapter-progress',
     // --- Class Assignments ---
     classAssignmentByTeacher: (teacherId) => `/assign/teacher/${teacherId}`,
     // --- Attachments ---

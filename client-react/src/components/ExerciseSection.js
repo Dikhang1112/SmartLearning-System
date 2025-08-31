@@ -1,6 +1,6 @@
 // components/ExerciseSection.js
 import React, { useEffect, useState, useCallback, useMemo, useContext } from 'react';
-import Apis, { endpoints } from '../configs/Apis';
+import Apis, { endpoints, authApis } from '../configs/Apis';
 import { MyUserContext } from '../reducers/MyUserReducer';
 import { SidebarContext } from '../reducers/SidebarContext'; // ⬅️ dùng layout offset
 import '../static/exerciseSection.css';
@@ -337,6 +337,7 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
                 initialGrade: res.data?.grade ?? null,
             });
             showSuccess(`Đã nộp bài "${ex.title}".`);
+            await recalculateProgress();
         } catch (e) {
             console.error(e);
             showError('Nộp bài thất bại.');
@@ -344,6 +345,16 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
             setSubmitting(s => ({ ...s, [ex.id]: false }));
         }
     }
+    const recalculateProgress = async () => {
+        if (role !== 'STUDENT' || !user?.id) return;
+        try {
+            const url = `${endpoints['chapter-progress']}/recalculate/${user.id}/${chapterId}`;
+            console.log('Recalculating progress for:', url);
+            const res = await authApis().post(url);
+        } catch (err) {
+            console.error('Error recalculating progress:', err.response?.data || err.message);
+        }
+    };
 
     // --- Nhóm MCQ / ESSAY ---
     const mcqExercises = useMemo(

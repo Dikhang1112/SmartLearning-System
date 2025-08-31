@@ -63,7 +63,7 @@ public class HibernateConfig {
         props.put("hibernate.format_sql", "true");
         return props;
     }
-     @Bean
+    @Bean
     public HibernateTransactionManager transactionManager() {
         HibernateTransactionManager transactionManager
                 = new HibernateTransactionManager();

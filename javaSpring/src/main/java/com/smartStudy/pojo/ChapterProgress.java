@@ -30,10 +30,12 @@ import java.util.Date;
 @NamedQueries({
     @NamedQuery(name = "ChapterProgress.findAll", query = "SELECT c FROM ChapterProgress c"),
     @NamedQuery(name = "ChapterProgress.findById", query = "SELECT c FROM ChapterProgress c WHERE c.id = :id"),
-    @NamedQuery(name = "ChapterProgress.findByCompleted", query = "SELECT c FROM ChapterProgress c WHERE c.completed = :completed"),
     @NamedQuery(name = "ChapterProgress.findByLastScore", query = "SELECT c FROM ChapterProgress c WHERE c.lastScore = :lastScore"),
     @NamedQuery(name = "ChapterProgress.findByUpdatedAt", query = "SELECT c FROM ChapterProgress c WHERE c.updatedAt = :updatedAt")})
 public class ChapterProgress implements Serializable {
+
+    @Column(name = "percent")
+    private Integer percent;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -41,9 +43,6 @@ public class ChapterProgress implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Column(name = "completed")
-    private Boolean completed;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "last_score")
     private BigDecimal lastScore;
     @Column(name = "updated_at")
@@ -69,14 +68,6 @@ public class ChapterProgress implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Boolean getCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
     }
 
     public BigDecimal getLastScore() {
@@ -134,6 +125,14 @@ public class ChapterProgress implements Serializable {
     @Override
     public String toString() {
         return "com.smartStudy.pojo.ChapterProgress[ id=" + id + " ]";
+    }
+
+    public Integer getPercent() {
+        return percent;
+    }
+
+    public void setPercent(Integer percent) {
+        this.percent = percent;
     }
     
 }

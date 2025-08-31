@@ -1,6 +1,5 @@
-// components/Chapter.js
 import React, { useContext, useEffect, useState } from 'react';
-import Apis, { endpoints } from '../configs/Apis';
+import Apis, { endpoints, authApis } from '../configs/Apis';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SidebarContext } from '../reducers/SidebarContext';
 import { MyUserContext } from '../reducers/MyUserReducer';
@@ -12,15 +11,17 @@ const Chapter = () => {
     const { subjectId } = useParams();
     const navigate = useNavigate();
     const { collapsed } = useContext(SidebarContext);
+    const user = useContext(MyUserContext);
+    const role = user?.role || 'STUDENT';
+    const canManage = role === 'TEACHER';
+
     const [subject, setSubject] = useState(null);
     const [chapters, setChapters] = useState([]);
+    const [chapterProgress, setChapterProgress] = useState({});
     const [loading, setLoading] = useState(true);
-    // modal state
     const [openModal, setOpenModal] = useState(false);
     const [editing, setEditing] = useState(null);
-    const user = useContext(MyUserContext);
-    const role = user?.role || 'STUDENT'; // mặc định readonly nếu chưa đăng nhập
-    const canManage = role === 'TEACHER';
+    const [refreshProgress, setRefreshProgress] = useState(false);
 
     const reload = async () => {
         setLoading(true);
@@ -28,48 +29,90 @@ const Chapter = () => {
             const resSubject = await Apis.get(`${endpoints.subjects}/${subjectId}`);
             setSubject(resSubject.data);
 
-            // Backend của bạn đang trả mảng trực tiếp:
             const resChapters = await Apis.get(`${endpoints.chapters}/subject/${subjectId}`);
-            setChapters(resChapters.data || []);
+            const chaptersData = resChapters.data || [];
+            setChapters(chaptersData);
+
+            if (role === 'STUDENT' && user?.id) {
+                const progressData = {};
+                try {
+                    const resProgress = await authApis().get(`${endpoints['chapter-progress']}/student/${user.id}`);
+                    resProgress.data.forEach(p => {
+                        progressData[p.chapterId.id] = { percent: p.percent, lastScore: p.lastScore };
+                    });
+                } catch (err) {
+                    console.error('Error fetching progress:', err.response?.data || err.message);
+                }
+                chaptersData.forEach(ch => {
+                    if (!progressData[ch.id]) {
+                        progressData[ch.id] = { percent: 0, lastScore: 0 };
+                    }
+                });
+                setChapterProgress(progressData);
+            }
         } catch (err) {
             setSubject(null);
             setChapters([]);
+            setChapterProgress({});
             console.error('Error loading chapter data:', err);
+            showError('Tải dữ liệu thất bại. Vui lòng thử lại.');
+        } finally {
+            setLoading(false);
+            setRefreshProgress(false);
         }
-        setLoading(false);
+    };
+
+    const recalculateProgress = async (chapterId) => {
+        if (role !== 'STUDENT' || !user?.id) return;
+        try {
+            const url = `${endpoints['chapter-progress']}/recalculate/${user.id}/${chapterId}`;
+            const res = await authApis().post(url);
+            setChapterProgress(prev => ({
+                ...prev,
+                [chapterId]: { percent: res.data.percent, lastScore: res.data.lastScore }
+            }));
+            showSuccess('Cập nhật tiến độ thành công.');
+        } catch (err) {
+            console.error('Error recalculating progress:', err.response?.data || err.message);
+            showError('Cập nhật tiến độ thất bại.');
+        }
     };
 
     useEffect(() => {
         if (subjectId) reload();
         // eslint-disable-next-line
-    }, [subjectId]);
+    }, [subjectId, refreshProgress]);
+
+    const onExerciseSubmit = (chapterId) => {
+        recalculateProgress(chapterId);
+        setRefreshProgress(true);
+    };
 
     const goToSection = (chapterId) => {
         navigate(`/chapters/${subjectId}/section/${chapterId}`);
     };
 
-    // open create modal
     const openCreate = () => {
-        if (!canManage) return; // chặn nếu không có quyền
+        if (!canManage) return;
         setEditing(null);
         setOpenModal(true);
     };
 
-    // open edit modal
     const openEdit = (ch, e) => {
-        if (!canManage) return; // chặn nếu không có quyền
+        if (!canManage) return;
         e.stopPropagation();
         setEditing(ch);
         setOpenModal(true);
     };
 
     const onDelete = async (id, e) => {
-        if (!canManage) return; // chặn nếu không có quyền
+        if (!canManage) return;
         e.stopPropagation();
         if (!window.confirm('Bạn có chắc muốn xóa chương này?')) return;
         try {
             await Apis.delete(`${endpoints.chapters}/${id}`);
             showSuccess('Xóa chương thành công.');
+            reload();
         } catch (err) {
             console.error(err);
             showError('Xóa chương thất bại. Vui lòng thử lại sau.');
@@ -97,48 +140,89 @@ const Chapter = () => {
             <div className="chapter-toolbar">
                 <h2 className="chapter-section-title">Các chương</h2>
                 {canManage && (
-                    <button className="chapter-add-btn" onClick={openCreate}>+ Thêm chương</button>
+                    <button className="chapter-add-btn" onClick={openCreate}>
+                        + Thêm chương
+                    </button>
                 )}
             </div>
+
             <div className="chapter-list">
                 {loading && <div>Đang tải danh sách chương...</div>}
-                {!loading && chapters.length === 0 && (
-                    <div className="chapter-empty">Chưa có chương nào.</div>
-                )}
-                {!loading && chapters.map((ch) => (
-                    <div
-                        className="chapter-card"
-                        key={ch.id}
-                        onClick={() => goToSection(ch.id)}
-                        style={{ cursor: 'pointer', position: 'relative' }}
-                    >
-                        {/* Actions for teacher (edit/delete) */}
-                        {canManage && (
-                            <div className="chapter-actions" onClick={(e) => e.stopPropagation()}>
-                                <button className="chapter-icon-btn" title="Sửa" aria-label="Sửa"
-                                    onClick={(e) => openEdit(ch, e)}>
-                                    ✏️ {/* Pen icon bằng Unicode */}
-                                </button>
+                {!loading && chapters.length === 0 && <div className="chapter-empty">Chưa có chương nào.</div>}
 
-                                <button className="chapter-icon-btn danger" title="Xóa" aria-label="Xóa"
-                                    onClick={(e) => onDelete(ch.id, e)}>
-                                    🗑️ {/* Bin icon bằng Unicode */}
-                                </button>
+                {!loading &&
+                    chapters.map((ch) => (
+                        <div
+                            className="chapter-card"
+                            key={ch.id}
+                            onClick={() => goToSection(ch.id)}
+                        >
+                            {canManage && (
+                                <div className="chapter-actions" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        className="chapter-icon-btn"
+                                        title="Sửa"
+                                        aria-label="Sửa"
+                                        onClick={(e) => openEdit(ch, e)}
+                                    >
+                                        ✏️
+                                    </button>
+                                    <button
+                                        className="chapter-icon-btn danger"
+                                        title="Xóa"
+                                        aria-label="Xóa"
+                                        onClick={(e) => onDelete(ch.id, e)}
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="chapter-indexbox">
+                                <div>{String(ch.orderIndex).padStart(2, '0')}</div>
+                                <div className="chapter-lesson-text">LESSON</div>
                             </div>
-                        )}
-                        <div className="chapter-indexbox">
-                            <div>{String(ch.orderIndex).padStart(2, '0')}</div>
-                            <div className="chapter-lesson-text">LESSON</div>
+
+                            <div className="chapter-info">
+                                <div className="chapter-card-title">{ch.title}</div>
+                                <div className="chapter-card-sumary">{ch.summaryText}</div>
+                            </div>
+
+                            {/* Nút reload ở TRONG card */}
+                            {role === 'STUDENT' && (
+                                <button
+                                    className="chapter-icon-btn chapter-reload-btn"
+                                    title="Cập nhật tiến độ"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        recalculateProgress(ch.id);
+                                    }}
+                                >
+                                    🔄
+                                </button>
+                            )}
+
+                            {/* Cụm tiến độ: ở NGOÀI, bên phải, ngang hàng card */}
+                            {role === 'STUDENT' && (
+                                <div className="chapter-progress">
+                                    <div className="progress-bar">
+                                        <div
+                                            className="progress-bar-fill"
+                                            style={{ width: `${chapterProgress[ch.id]?.percent || 0}%` }}
+                                        />
+                                    </div>
+                                    <div className="progress-text">
+                                        Tiến độ: {chapterProgress[ch.id]?.percent || 0}%
+                                    </div>
+                                    <div className="score-text">
+                                        Điểm: {chapterProgress[ch.id]?.lastScore || 0}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <div className="chapter-info">
-                            <div className="chapter-card-title">{ch.title}</div>
-                            <div className="chapter-card-sumary">{ch.summaryText}</div>
-                        </div>
-                    </div>
-                ))}
+                    ))}
             </div>
 
-            {/* Modal tạo/sửa Chapter */}
             <ModalChapter
                 open={openModal}
                 onClose={() => setOpenModal(false)}

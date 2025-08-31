@@ -21,6 +21,8 @@ export const endpoints = {
     'essay-responses': '/essay-responses',
     'email': 'email/send',
     'notifications': '/notifications',
+    'forgot-pass': '/auth/forgot-password',
+    'reset-pass': '/auth/reset-password',
     // --- Class Assignments ---
     classAssignmentByTeacher: (teacherId) => `/assign/teacher/${teacherId}`,
     // --- Attachments ---

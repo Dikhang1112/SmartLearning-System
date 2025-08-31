@@ -17,4 +17,10 @@ public interface UserService extends UserDetailsService {
     boolean exitsByEmail(String mail);
     boolean authenticate (String email, String password);
     String authenticateGoogle(String idToken) throws Exception;
+
+    //Send otp & mail
+    public void issueResetOtp(String email);
+    public boolean resetPasswordWithOtp(String email, String inputOtp, String newPassword);
+
+
 }

@@ -3,6 +3,7 @@ package com.smartStudy.services.impl;
 import com.cloudinary.utils.ObjectUtils;
 import com.smartStudy.pojo.User;
 import com.smartStudy.repositories.UserRepository;
+import com.smartStudy.services.EmailService;
 import com.smartStudy.services.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -18,14 +19,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Service("userDetailsService")
 public class UserServiceImpl implements UserService {
@@ -38,6 +39,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private Cloudinary cloudinary;
 
+    @Autowired
+    private EmailService emailService;
+    private static final long OTP_TTL_MINUTES = 10;
+    private static final long OTP_COOLDOWN_SECONDS = 60;
     @Override
     public List<User> getUsers(Map<String, String> params) {
         return userRepo.getUsers(params);
@@ -196,6 +201,57 @@ public class UserServiceImpl implements UserService {
         System.out.println("Generated JWT: " + jwt);
         return jwt;
     }
+
+    @Override
+    public void issueResetOtp(String email) {
+        User u = userRepo.getUserByMail(email);
+        if (u == null) return; // không lộ email tồn tại hay không
+
+        // rate-limit
+        var now = Instant.now();
+        if (u.getOtpRequestedTime() != null) {
+            var last = u.getOtpRequestedTime().toInstant();
+            if (Duration.between(last, now).getSeconds() < OTP_COOLDOWN_SECONDS)
+                return;
+        }
+
+        // sinh OTP
+        String otp = String.format("%06d", new Random().nextInt(1_000_000));
+
+        // Lưu plain (đơn giản) — khuyến nghị dài hạn: lưu HASH
+        u.setOneTimePassword(otp);
+        u.setOtpRequestedTime(Date.from(now));
+        userRepo.updateUser(u);
+
+        // 👉 TẬN DỤNG EmailService
+        emailService.sendOtpEmail(email, otp, OTP_TTL_MINUTES);
+    }
+
+    @Override
+    public boolean resetPasswordWithOtp(String email, String inputOtp, String newPassword) {
+        User u = userRepo.getUserByMail(email);
+        if (u == null) return true; // không lộ info
+
+        // kiểm tra TTL
+        if (u.getOtpRequestedTime() == null) return false;
+        var issuedAt = u.getOtpRequestedTime().toInstant();
+        if (Duration.between(issuedAt, Instant.now()).toMinutes() >= OTP_TTL_MINUTES)
+            return false;
+
+        // so sánh OTP (nếu dùng HASH: passwordEncoder.matches(inputOtp, u.getOneTimePassword()))
+        if (!Objects.equals(inputOtp, u.getOneTimePassword()))
+            return false;
+
+        // cập nhật mật khẩu
+        u.setPassword(passwordEncoder.encode(newPassword));
+        // dọn OTP
+        u.setOneTimePassword(null);
+        u.setOtpRequestedTime(null);
+        userRepo.updateUser(u);
+        return true;
+    }
+
+
     /**
      * Spring Security callback: dùng email làm username
      */

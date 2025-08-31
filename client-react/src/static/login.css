@@ -160,3 +160,72 @@
 .toggle-password:hover {
     color: #333;
 }
+
+.forget-pass {
+    margin-top: 6px;
+    color: #0d6efd;
+    cursor: pointer;
+    font-size: 0.95rem;
+    user-select: none;
+    display: inline-block;
+}
+
+.forget-pass:hover {
+    color: #e7443b;
+    /* xanh đậm hơn khi hover */
+    text-decoration: underline;
+}
+
+.email-otp-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 25px;
+    /* 👉 tăng khoảng cách giữa input và nút */
+    margin-bottom: 1rem;
+}
+
+.email-col {
+    flex: 4 !important;
+    /* 👉 input chiếm rộng hơn */
+    display: flex;
+    flex-direction: column;
+}
+
+.email-otp-input {
+    width: 120%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.btn-send-otp {
+    flex: 1;
+    /* 👉 nút nhỏ hơn input */
+    padding: 8px 14px;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.btn-send-otp:hover:enabled {
+    background-color: #084298;
+}
+
+.btn-send-otp:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.forgot-form {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    gap: 20px;
+}

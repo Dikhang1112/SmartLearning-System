@@ -11,4 +11,7 @@ public interface EmailService {
                           String viewUrl,
                           Integer grade,
                           String feedback);
+    void sendPlainText(String to, String subject, String content);
+    void sendOtpEmail(String to, String otp, long ttlMinutes);
+
 }

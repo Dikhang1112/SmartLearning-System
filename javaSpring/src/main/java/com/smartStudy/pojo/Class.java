@@ -34,6 +34,7 @@ public class Class implements Serializable {
         @JoinColumn(name = "class_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "student_id", referencedColumnName = "user_id")})
     @ManyToMany
+    @JsonIgnore
     private List<Student> studentList;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "class1")

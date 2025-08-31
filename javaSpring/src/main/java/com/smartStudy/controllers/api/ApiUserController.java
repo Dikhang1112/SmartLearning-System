@@ -1,4 +1,5 @@
 package com.smartStudy.controllers.api;
+
 import com.cloudinary.Cloudinary;
 import com.smartStudy.pojo.User;
 import com.smartStudy.services.UserService;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +26,7 @@ public class ApiUserController {
 
     @Autowired
     private UserService userService;
+
     @GetMapping("/users")
     public ResponseEntity<List<User>> userlist(@RequestParam Map<String, String> params) {
         return new ResponseEntity<>(this.userService.getUsers(params), HttpStatus.OK);
@@ -33,12 +36,14 @@ public class ApiUserController {
     public ResponseEntity<User> getUserId(@PathVariable(value = "userId") int id) {
         return new ResponseEntity<>(this.userService.getUserById(id), HttpStatus.OK);
     }
+
     @PostMapping(path = "/users",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<User> create(@RequestParam Map<String, String> params, @RequestParam(value = "avatar") MultipartFile avatar) {
-        return new ResponseEntity<>(this.userService.addUserClient(params,avatar), HttpStatus.CREATED);
+        return new ResponseEntity<>(this.userService.addUserClient(params, avatar), HttpStatus.CREATED);
     }
+
     @DeleteMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable(value = "userId") int id) {
@@ -46,8 +51,7 @@ public class ApiUserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity <?> login(@RequestBody User u)
-    {
+    public ResponseEntity<?> login(@RequestBody User u) {
         if (this.userService.authenticate(u.getEmail(), u.getPassword())) {
             try {
                 String token = JwtUtils.generateToken(u.getEmail());
@@ -114,5 +118,53 @@ public class ApiUserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng!");
         }
         return ResponseEntity.ok(u);
+    }
+
+    // ------------------ FORGOT PASSWORD: GỬI OTP ------------------
+    @PatchMapping(path = "/auth/forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Email là bắt buộc"));
+        }
+
+        // Luôn trả về message chung để không lộ email có tồn tại hay không
+        this.userService.issueResetOtp(email);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Nếu tài khoản tồn tại, OTP đã được gửi tới email của bạn")
+        );
+    }
+
+    // ------------------ RESET PASSWORD BẰNG OTP ------------------
+    @PatchMapping(path = "/auth/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+        String otp = req.get("otp");
+        String newPassword = req.get("newPassword");
+        String confirmNewPassword = req.get("confirmNewPassword");
+
+        if (email == null || otp == null || newPassword == null || confirmNewPassword == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Thiếu thông tin bắt buộc"));
+        }
+
+        if (!newPassword.equals(confirmNewPassword)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Mật khẩu xác nhận không khớp"));
+        }
+
+        boolean ok = this.userService.resetPasswordWithOtp(email, otp, newPassword);
+        if (!ok) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "OTP không hợp lệ hoặc đã hết hạn"));
+        }
+
+        return ResponseEntity.ok(
+                Map.of("message", "Đặt lại mật khẩu thành công")
+        );
     }
 }

@@ -59,6 +59,8 @@ public class SpringSecurityConfig {
                         .requestMatchers("/javaSpring").hasRole("ADMIN") // chỉ ADMIN mới vào được trang "/"
                         .requestMatchers("/").hasRole("ADMIN")
                         .requestMatchers( "/api/google-login", "/api/login").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers( "/api/auth/reset-password").permitAll()
                         .requestMatchers("/public/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
                         .anyRequest().permitAll()
                 )
@@ -106,7 +108,7 @@ public class SpringSecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);

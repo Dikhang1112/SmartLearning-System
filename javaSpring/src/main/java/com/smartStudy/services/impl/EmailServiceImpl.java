@@ -4,6 +4,7 @@ import com.smartStudy.services.EmailService;
 import jakarta.mail.internet.InternetAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,27 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception ignored) {
             // TODO: log cảnh báo nếu cần
         }
+    }
+
+    @Override
+    public void sendPlainText(String to, String subject, String content) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(systemFrom);
+        msg.setTo(to);
+        msg.setSubject(subject);
+        msg.setText(content);
+        mailSender.send(msg);
+    }
+
+    @Override
+    public void sendOtpEmail(String to, String otp, long ttlMinutes) {
+        String subject = "[StudySmart] Mã OTP đặt lại mật khẩu";
+        String body =
+                "Xin chào,\n\n" +
+                        "Mã OTP đặt lại mật khẩu của bạn là: " + otp + "\n" +
+                        "OTP có hiệu lực trong " + ttlMinutes + " phút.\n\n" +
+                        "Nếu không phải bạn yêu cầu, vui lòng bỏ qua email này.";
+        sendPlainText(to, subject, body);
     }
 }
 

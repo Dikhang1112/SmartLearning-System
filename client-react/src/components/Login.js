@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import cookie from 'react-cookies';
 import AuthGoogle from '../configs/AuthGoogle';
+import ForgetPass from './ForgetPass';
 
 const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
@@ -20,6 +21,8 @@ const Login = ({ onLoginSuccess }) => {
     const role = user?.role || 'STUDENT'; // mặc định readonly nếu chưa đăng nhập
     const canManage = role === 'TEACHER';
     const nav = useNavigate();
+    const [showForget, setShowForget] = useState(false); // 👈 state mở modal
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -120,7 +123,9 @@ const Login = ({ onLoginSuccess }) => {
             setLoading(false);
         }
     };
-
+    const handleForgetPass = () => {
+        setShowForget(true);
+    };
     return (
         <div className="login-container">
             <div className="login-title">Đăng nhập</div>
@@ -155,6 +160,7 @@ const Login = ({ onLoginSuccess }) => {
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </span>
                     </div>
+                    <span className="forget-pass" onClick={handleForgetPass}> Quên mật khẩu ? </span>
                 </div>
                 {error && <div className="login-error">{error}</div>}
                 {success && <div className="login-success">{success}</div>}
@@ -165,6 +171,14 @@ const Login = ({ onLoginSuccess }) => {
                     </button>
                 </div>
             </form>
+            {showForget && (
+                <div className="custom-modal" onClick={() => setShowForget(false)}>
+                    <div className="custom-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close-btn" onClick={() => setShowForget(false)}>×</button>
+                        <ForgetPass onClose={() => setShowForget(false)} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

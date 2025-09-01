@@ -2,14 +2,10 @@
 package com.smartStudy.controllers.api;
 
 import com.smartStudy.services.EmailService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.time.*;
 import java.util.Map;
 
 @RestController
@@ -37,6 +33,37 @@ public class ApiEmailController {
                 "to", req.getStudentEmail(),
                 "replyTo", req.getTeacherEmail()
         ));
+    }
+    @PostMapping("/remind/today")
+    public ResponseEntity<Void> remindToday() {
+        emailService.remindStudy(LocalDate.now());
+        return ResponseEntity.accepted().build(); // 202 Accepted
+    }
+
+    // 2) Gửi nhắc cho TẤT CẢ học sinh vào NGÀY chỉ định
+    // POST /api/emails/remind?date=2025-09-02
+    @PostMapping("/remind")
+    public ResponseEntity<Void> remindByDate(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        LocalDate d = (date != null) ? date : LocalDate.now();
+        emailService.remindStudy(d);
+        return ResponseEntity.accepted().build();
+    }
+
+    // 3) (Tuỳ chọn) Gửi nhắc CHO 1 HỌC SINH cụ thể vào NGÀY chỉ định/hoặc hôm nay
+    // POST /api/emails/remind/student/64            -> today
+    // POST /api/emails/remind/student/64?date=...   -> date
+    @PostMapping("/remind/student/{studentId}")
+    public ResponseEntity<Void> remindForStudent(
+            @PathVariable Integer studentId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        LocalDate d = (date != null) ? date : LocalDate.now();
+        emailService.remindStudy(studentId, d);
+        return ResponseEntity.accepted().build();
     }
 
     // Body khớp tham số method mới

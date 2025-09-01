@@ -64,7 +64,7 @@ function App() {
                 <Route path="/teacherDashBoard/" element={<TeacherDashboard />} />
                 <Route path="/chapters/:subjectId" element={<Chapter />} />
                 <Route path="/chapters/:subjectId/section/:chapterId" element={<ChapterSection />} />
-                <Route path="/studyPlans" element={<StudyPlans />} />
+                <Route path="/studyPlans/:studentId" element={<StudyPlans />} />
                 <Route path="/submission" element={<Submission />} />
                 <Route path="/submission/chapters" element={<SubmissionChapter />} />
                 <Route path="/profile/:userId" element={<Profile />} />

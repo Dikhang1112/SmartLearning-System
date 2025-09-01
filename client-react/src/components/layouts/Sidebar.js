@@ -15,7 +15,7 @@ const Sidebar = () => {
         if (role === 'STUDENT') {
             return [
                 { icon: <FaBook />, title: 'Môn học', path: '/studentDashboard' },
-                { icon: <FaCalendarAlt />, title: 'Kế hoạch học tập', path: '/studyPlans' },
+                { icon: <FaCalendarAlt />, title: 'Kế hoạch học tập', path: `/studyPlans/${user.id}` },
             ];
         }
         if (role === 'TEACHER') {

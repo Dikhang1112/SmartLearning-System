@@ -48,5 +48,6 @@
     <class>com.smartStudy.pojo.Notification</class>
     <class>com.smartStudy.pojo.StudentClass</class>
     <class>com.smartStudy.pojo.TeacherClass</class>
+    <class>com.smartStudy.pojo.StudentSchedule</class>
   </persistence-unit>
 </persistence>

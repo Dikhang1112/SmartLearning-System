@@ -1,6 +1,8 @@
 // com.smartStudy.services.EmailService.java
 package com.smartStudy.services;
 
+import java.time.LocalDate;
+
 public interface EmailService {
     // thêm method mới
     void sendGradedNotice(String studentEmail,
@@ -13,5 +15,9 @@ public interface EmailService {
                           String feedback);
     void sendPlainText(String to, String subject, String content);
     void sendOtpEmail(String to, String otp, long ttlMinutes);
+
+    void remindStudy(LocalDate date);
+    void remindStudy(Integer studentId,LocalDate date);
+
 
 }

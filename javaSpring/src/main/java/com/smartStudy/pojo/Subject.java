@@ -39,6 +39,9 @@ public class Subject implements Serializable {
     @Size(max = 65535)
     @Column(name = "description")
     private String description;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectId")
+    @JsonIgnore
+    private List<StudentSchedule> studentScheduleList;
     @ManyToMany(mappedBy = "subjectList")
     @JsonIgnore
     private List<Student> studentList;
@@ -213,5 +216,13 @@ public class Subject implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<StudentSchedule> getStudentScheduleList() {
+        return studentScheduleList;
+    }
+
+    public void setStudentScheduleList(List<StudentSchedule> studentScheduleList) {
+        this.studentScheduleList = studentScheduleList;
     }
 }

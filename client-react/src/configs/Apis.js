@@ -38,6 +38,9 @@ export const endpoints = {
     'submissionsByExercise': (exerciseId) => `/submissions/exercise/${exerciseId}`,
     'submissionsByStudent': (studentId) => `/submissions/student/${studentId}`,
     'EssayResponsesByExercise': (exerciseId) => `/essay-responses/exercise/${exerciseId}`,
+    //Study plans
+    'schedules': '/schedules',
+    'schedulesByStudent': (studentId) => `/schedules/student/${studentId}`
 }
 
 export const apiUrl = (path) =>

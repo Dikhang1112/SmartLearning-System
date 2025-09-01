@@ -1,6 +1,7 @@
 package com.smartStudy.dto;
 
 import com.smartStudy.pojo.Subject;
+import com.smartStudy.pojo.User;
 
 import java.util.List;
 
@@ -13,6 +14,13 @@ public class StudentDTO {
         this.setUserId(userId);
         this.setUser(user);
         this.setSubjectList(subjectList);
+    }
+    public StudentDTO (Integer userId)
+    {
+        this.userId = userId;
+    }
+
+    public StudentDTO(Integer userId, User user) {
     }
 
     public Integer getUserId() {

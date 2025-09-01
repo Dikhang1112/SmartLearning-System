@@ -1,6 +1,9 @@
 package com.smartStudy.services.impl;
 
+import com.smartStudy.pojo.StudentSchedule;
+import com.smartStudy.pojo.User;
 import com.smartStudy.services.EmailService;
+import com.smartStudy.services.ScheduleService;
 import jakarta.mail.internet.InternetAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,9 +13,16 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
+
 @Service
 @Transactional
 public class EmailServiceImpl implements EmailService {
+    @Autowired
+    private ScheduleService scheduleService;
     @Autowired
     private JavaMailSender mailSender;
     @Value("${spring.mail.username}")
@@ -101,6 +111,81 @@ public class EmailServiceImpl implements EmailService {
                         "OTP có hiệu lực trong " + ttlMinutes + " phút.\n\n" +
                         "Nếu không phải bạn yêu cầu, vui lòng bỏ qua email này.";
         sendPlainText(to, subject, body);
+    }
+
+    @Override
+    public void remindStudy(LocalDate date) {
+        List<Integer> studentIds = scheduleService.findStudentIdsByDate(date);
+        if (studentIds == null || studentIds.isEmpty()) return;
+
+        for (Integer sid : studentIds) {
+            try {
+                remindStudy(sid, date); // tái dùng hàm “1 student”
+            } catch (Exception ex) {
+                // log lỗi nhưng không làm gián đoạn các student khác
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void remindStudy(Integer studentId, LocalDate date) {
+        if (studentId == null || date == null) return;
+
+        List<StudentSchedule> schedules = scheduleService.findByStudentAndDate(studentId, date);
+        if (schedules == null || schedules.isEmpty()) return;
+
+        // Lấy email + tên từ 1 record (cùng 1 student)
+        StudentSchedule any = schedules.get(0);
+        String to = null;
+        String studentName = null;
+        if (any.getStudentId() != null && any.getStudentId().getUserId() != null) {
+            User u = any.getStudentId().getUser();
+            to = u.getEmail();
+            studentName = u.getName();
+        }
+        if (to == null || to.isBlank()) return;
+
+        // Sort theo startTime cho đẹp
+        schedules.sort(Comparator.comparing(StudentSchedule::getStartTime,
+                Comparator.nullsLast(Comparator.naturalOrder())));
+
+        String subject = "[SmartStudy] Nhắc lịch học ngày " + date;
+        String body = buildPlainBodyForStudent(date, schedules, studentName);
+
+        sendPlainText(to, subject, body);
+    }
+
+    private String buildPlainBodyForStudent(LocalDate date,
+                                            List<StudentSchedule> list,
+                                            String studentName) {
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
+        StringBuilder sb = new StringBuilder();
+
+        if (studentName != null && !studentName.isBlank()) {
+            sb.append("Chào ").append(studentName).append(",\n\n");
+        } else {
+            sb.append("Chào bạn,\n\n");
+        }
+        sb.append("Hôm nay (").append(date).append(") bạn có ")
+                .append(list.size()).append(" lịch học.\n\nChi tiết:\n");
+
+        for (StudentSchedule sc : list) {
+            String start = sc.getStartTime() != null ? sc.getStartTime().format(timeFmt) : "--:--";
+            String end   = sc.getEndTime()   != null ? sc.getEndTime().format(timeFmt)   : "--:--";
+            String subjectTitle = (sc.getSubjectId() != null && sc.getSubjectId().getTitle() != null)
+                    ? sc.getSubjectId().getTitle() : "Môn học";
+            String note = (sc.getNote() != null && !sc.getNote().isBlank())
+                    ? sc.getNote() : "(Không có ghi chú)";
+
+            sb.append("Thời gian: ").append(start).append(" – ").append(end).append("\n")
+                    .append("Môn học: ").append(subjectTitle).append("\n")
+                    .append("Ghi chú: ").append(note).append("\n")
+                    .append("-------------------------\n");
+        }
+
+        sb.append("\nChúc bạn học tốt!\nSmartStudy");
+        return sb.toString();
     }
 }
 

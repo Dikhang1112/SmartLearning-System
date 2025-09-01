@@ -23,6 +23,10 @@ public class Student implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     @JsonIgnore
+    private List<StudentSchedule> studentScheduleList;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
+    @JsonIgnore
     private List<Notification> notificationList;
 
     private static final long serialVersionUID = 1L;
@@ -114,6 +118,14 @@ public class Student implements Serializable {
 
     public void setNotificationList(List<Notification> notificationList) {
         this.notificationList = notificationList;
+    }
+
+    public List<StudentSchedule> getStudentScheduleList() {
+        return studentScheduleList;
+    }
+
+    public void setStudentScheduleList(List<StudentSchedule> studentScheduleList) {
+        this.studentScheduleList = studentScheduleList;
     }
     
 }

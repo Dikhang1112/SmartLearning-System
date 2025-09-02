@@ -33,7 +33,7 @@ public class Class implements Serializable {
     @JoinTable(name = "student_class", joinColumns = {
         @JoinColumn(name = "class_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "student_id", referencedColumnName = "user_id")})
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Student> studentList;
 

@@ -24,6 +24,7 @@ export const endpoints = {
     'forgot-pass': '/auth/forgot-password',
     'reset-pass': '/auth/reset-password',
     'chapter-progress': '/chapter-progress',
+    'firebase': '/firebase/custom-token',
     // --- Class Assignments ---
     classAssignmentByTeacher: (teacherId) => `/assign/teacher/${teacherId}`,
     // --- Attachments ---

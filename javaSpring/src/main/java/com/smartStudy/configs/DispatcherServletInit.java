@@ -11,6 +11,8 @@ import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
+
+
 /**
  * @author DUNG
  */
@@ -23,7 +25,8 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
                 HibernateConfig.class,
                 SpringSecurityConfig.class,
                 EmailConfig.class,
-                DataInitializer.class
+                DataInitializer.class,
+                FirebaseAdminConfig.class
         };
     }
 

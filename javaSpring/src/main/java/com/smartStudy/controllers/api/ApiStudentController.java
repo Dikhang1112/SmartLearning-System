@@ -40,7 +40,7 @@ public class ApiStudentController {
         List<StudentDTO> dtos = students.stream().map(student -> {
             // Map user
             User user = student.getUser();
-            UserDTO userDto = new UserDTO(user.getName(), user.getEmail(), user.getAvatar());
+            UserDTO userDto = new UserDTO(user.getEmail(),user.getName(), user.getAvatar());
             // Map subjects sang SubjectDTO
             List<SubjectDTO> subjectDTOs = student.getSubjectList().stream()
                     .map(s -> {
@@ -67,7 +67,7 @@ public class ApiStudentController {
 
         // Map user
         User user = student.getUser();
-        UserDTO userDto = new UserDTO(user.getName(), user.getEmail(), user.getAvatar());
+        UserDTO userDto = new UserDTO(user.getEmail(),user.getName(), user.getAvatar());
 
         // Map subjects sang SubjectDTO và set teacherNames
         List<SubjectDTO> subjectDTOs = student.getSubjectList().stream()

@@ -15,6 +15,7 @@ import StudyPlans from './components/StudyPlans';
 import Submission from './components/Submission';
 import Chapter from './components/Chapter';
 import SubmissionChapter from './components/SubmissionChapter';
+import Message from './components/Message';
 import { endpoints, authApis } from './configs/Apis';
 import cookie from 'react-cookies';
 import 'react-toastify/dist/ReactToastify.css';
@@ -68,6 +69,7 @@ function App() {
                 <Route path="/submission" element={<Submission />} />
                 <Route path="/submission/chapters" element={<SubmissionChapter />} />
                 <Route path="/profile/:userId" element={<Profile />} />
+                <Route path="/message/:userId" element={< Message />} />
               </Routes>
               <ToastContainer // Toast toàn cục
                 position="top-right"

@@ -8,6 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import cookie from 'react-cookies';
 import AuthGoogle from '../configs/AuthGoogle';
 import ForgetPass from './ForgetPass';
+import { signInWithFirebaseCustomToken, auth } from '../configs/Firebase';
 
 const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
@@ -33,7 +34,26 @@ const Login = ({ onLoginSuccess }) => {
             setError('Không thể khởi tạo tiến độ học tập. Vui lòng thử lại.');
         }
     };
+    // Đăng nhập Firebase bằng custom token từ backend
+    const attachFirebaseSession = async () => {
+        try {
+            // gọi backend lấy custom token (đã có JWT nhờ authApis)
+            const fbRes = await authApis().get(endpoints.firebase);
+            const fbToken = fbRes?.data?.token;
+            if (!fbToken) throw new Error("Không nhận được Firebase custom token");
 
+            // đăng nhập Firebase
+            await signInWithFirebaseCustomToken(fbToken);
+
+            // Thông báo test: Firebase OK
+            console.log("Firebase sign-in OK. uid =", auth.currentUser?.uid);
+            return true;
+        } catch (e) {
+            console.error("Firebase sign-in failed:", e);
+            setError('Xác thực firebase thất bại');
+            return false;
+        }
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -75,6 +95,7 @@ const Login = ({ onLoginSuccess }) => {
                         avatar: userInfo.avatar
                     }
                 });
+                attachFirebaseSession(); // Đăng nhập Firebases
                 if (onLoginSuccess) onLoginSuccess(); // Tắt modal khi login thành công!
                 if (userInfo.role === "STUDENT") {
                     await initializeChapterProgress(userInfo.id);
@@ -117,6 +138,7 @@ const Login = ({ onLoginSuccess }) => {
                     avatar: userInfo.avatar
                 }
             });
+            attachFirebaseSession(); // Đăng nhập Firebases
             setSuccess('Đăng nhập bằng Google thành công!');
             setError('');
             if (onLoginSuccess) onLoginSuccess(); // Tắt modal khi login thành công

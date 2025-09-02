@@ -36,7 +36,6 @@ public class Student implements Serializable {
     @Column(name = "user_id")
     private Integer userId;
     @ManyToMany(mappedBy = "studentList")
-    @JsonIgnore
     private List<Class> classList;
     @JoinTable(name = "student_subject", joinColumns = {
         @JoinColumn(name = "student_id", referencedColumnName = "user_id")}, inverseJoinColumns = {

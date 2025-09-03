@@ -54,8 +54,7 @@ const ForgetPass = ({ onClose }) => {
                 confirmNewPassword: cf
             }); // PATCH /auth/reset-password
             setOk('Đặt lại mật khẩu thành công! Bạn có thể đăng nhập với mật khẩu mới.');
-            // Tuỳ chọn: tự đóng modal sau 1–2s
-            // setTimeout(() => onClose?.(), 1500);
+            setTimeout(() => onClose?.(), 1500);
         } catch (e2) {
             setErr('OTP không hợp lệ hoặc đã hết hạn, hoặc có lỗi khi đặt lại mật khẩu.');
         } finally {

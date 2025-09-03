@@ -16,8 +16,9 @@ const TeacherDashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user?.id) return;
-
+        if (!user) {
+            navigate('/');
+        }
         const fetchSubjects = async () => {
             setLoading(true);
             try {

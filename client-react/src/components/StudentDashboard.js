@@ -12,7 +12,12 @@ const StudentDashboard = () => {
   const { collapsed } = useContext(SidebarContext);
   const navigate = useNavigate();
 
+
+
   useEffect(() => {
+    if (!user) {
+      navigate('/');
+    }
     const fetchSubjects = async () => {
       if (!user?.id) return;
       setLoading(true);

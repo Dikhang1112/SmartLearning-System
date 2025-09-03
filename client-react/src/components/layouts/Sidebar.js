@@ -2,7 +2,7 @@ import React, { useContext, useMemo } from 'react';
 import { MyUserContext } from '../../reducers/MyUserReducer';
 import { SidebarContext } from '../../reducers/SidebarContext';
 import { useNavigate } from 'react-router-dom';
-import { FaChevronLeft, FaChevronRight, FaBook, FaCalendarAlt, FaAddressBook, FaRocketchat } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaBook, FaCalendarAlt, FaAddressBook, FaRocketchat, FaRobot } from 'react-icons/fa';
 import '../../static/sidebar.css';
 
 const Sidebar = () => {
@@ -23,7 +23,8 @@ const Sidebar = () => {
             return [
                 { icon: <FaBook />, title: 'Môn học', path: '/teacherDashboard' }, // FaBook cho TEACHER
                 { icon: <FaAddressBook />, title: 'Danh sách bài nộp', path: '/submission' },
-                { icon: <FaRocketchat />, title: 'Tin nhắn', path: `/message/${user.id}` }
+                { icon: <FaRocketchat />, title: 'Tin nhắn', path: `/message/${user.id}` },
+                { icon: <FaRobot />, title: 'Chat AI', path: `/chatAI/${user.id}` }
             ];
         }
         return []; // chưa đăng nhập / role khác → không hiển thị gì

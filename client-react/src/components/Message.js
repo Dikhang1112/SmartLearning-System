@@ -5,13 +5,16 @@ import "../static/message.css";
 import { SidebarContext } from "../reducers/SidebarContext";
 // Firebase
 import { auth, db } from "../configs/Firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
     collection, query, where, orderBy, limit, onSnapshot,
     doc, getDoc, setDoc, addDoc, serverTimestamp
 } from "firebase/firestore";
 // API nội bộ
 import { authApis, endpoints } from "../configs/Apis"; // dùng endpoints.students, endpoints.teachers, endpoints.auth  :contentReference[oaicite:2]{index=2}
+import { MyUserContext } from "../reducers/MyUserReducer";
 
+//--Helper--//
 // Chuẩn hoá 1 record user API: { userId, user: { name, mail, avatar }, subjectList: [ {id, ...} ] }
 const simplifyUser = (u) => ({
     id: String(u.userId),
@@ -33,6 +36,8 @@ function makeDirectConvId(a, b) {
     const [x, y] = [String(a), String(b)].sort((m, n) => (m < n ? -1 : 1));
     return `message_${x}_${y}`;
 }
+
+
 
 /** Đảm bảo tồn tại conversation direct; trả về convId */
 async function ensureDirectConversation(currentUid, peerUid) {
@@ -67,6 +72,15 @@ const fmtTime = (ts) => {
         return "";
     }
 };
+async function markConversationRead(convId, currentUid) {
+    if (!convId || !currentUid) return;
+    await setDoc(
+        doc(db, "conversations", convId),
+        { lastReadAt: { [String(currentUid)]: serverTimestamp() } },
+        { merge: true }
+    );
+}
+
 
 // Layout tránh Header + Sidebar
 const HEADER_HEIGHT = 80;
@@ -100,21 +114,27 @@ const Message = () => {
     // Danh sách "người phù hợp môn" (students+teachers cùng subject)
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
-
-    // Thông tin user hiện tại từ API (để biết subjectList & id nội bộ)
-    const [currentProfile, setCurrentProfile] = useState(null);
-
     const bottomRef = useRef(null);
-    const currentUid = auth.currentUser?.uid ? String(auth.currentUser.uid) : null; // uid Firebase == id nội bộ
+    const [currentUid, setCurrentUid] = useState(null);
+    const currentUser = useContext(MyUserContext);
+    const [activePeerId, setActivePeerId] = useState(null);
+    const [activePeerProfile, setActivePeerProfile] = useState(null); // { id, name, mail, avatar }
+
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+            setCurrentUid(user ? String(user.uid) : null);
+        });
+        return () => unsub();
+    }, []);
 
 
     useEffect(() => {
         // Cần đợi đăng nhập Firebase xong để có currentUid
-        if (!auth.currentUser?.uid) {
+        if (!currentUid) {
             setSuggestedUsers([]);
-            return;
+            return
         }
-
         const load = async () => {
             setLoadingUsers(true);
             try {
@@ -133,8 +153,8 @@ const Message = () => {
                 // 2) Chuẩn hoá
                 const everyone = everyoneRaw.map(simplifyUser);
 
-                // 3) Tìm “mình” theo userId == auth.currentUser.uid
-                const currentUidStr = String(auth.currentUser.uid);
+                // 3) Tìm “mình” theo userId == currrentUid
+                const currentUidStr = String(currentUid);
                 const me = everyone.find(u => u.id === currentUidStr);
                 if (!me) {
                     // Nếu không khớp, nhiều khả năng bạn chưa map Firebase UID = userId backend.
@@ -161,7 +181,35 @@ const Message = () => {
         };
 
         load();
-    }, [auth.currentUser?.uid]);
+    }, [currentUid]);
+    async function fetchPeerProfileById(peerId) {
+        try {
+            const api = authApis();
+            const [rsStu, rsTea] = await Promise.allSettled([
+                api.get(endpoints.students),
+                api.get(endpoints.teachers),
+            ]);
+            const asList = (res) =>
+                res.status === "fulfilled"
+                    ? (Array.isArray(res.value?.data) ? res.value.data : (res.value?.data ? [res.value.data] : []))
+                    : [];
+            const everyone = [...asList(rsStu), ...asList(rsTea)].map(simplifyUser);
+            return everyone.find(u => u.id === String(peerId)) || null;
+        } catch (e) {
+            console.error("fetchPeerProfileById failed:", e);
+            return null;
+        }
+    }
+
+    useEffect(() => {
+        let alive = true;
+        (async () => {
+            if (!activePeerId) { setActivePeerProfile(null); return; }
+            const prof = await fetchPeerProfileById(activePeerId);
+            if (alive) setActivePeerProfile(prof);
+        })();
+        return () => { alive = false; };
+    }, [activePeerId]);
 
 
     // =============== CONVERSATIONS (đang tham gia) ===============
@@ -179,7 +227,11 @@ const Message = () => {
             if (!activeConv && rows.length > 0) {
                 setActiveConv(rows[0].id);
                 setConvId(rows[0].id);
+                const p = getPeerIdFromConv(rows[0].memberIds);
+                setActivePeerId(p || null);
+                markConversationRead(rows[0].id, currentUid).catch(() => { });
             }
+
         });
         return () => unsub();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,6 +268,8 @@ const Message = () => {
             const id = await ensureDirectConversation(currentUid, peer);
             setActiveConv(id);
             setConvId(id);
+            setActivePeerId(peer || null);
+            await markConversationRead(id, currentUid);
         } catch (err) {
             console.error("Open chat failed:", err);
             alert("Không mở được cuộc trò chuyện.");
@@ -235,13 +289,13 @@ const Message = () => {
                 senderId: currentUid,
                 text: body,
                 createdAt: serverTimestamp(),
+
             });
             await setDoc(
                 doc(db, "conversations", convId),
-                { lastMessageAt: serverTimestamp(), lastMessageText: body },
+                { lastMessageAt: serverTimestamp(), lastMessageText: body, lastMessageBy: currentUid },
                 { merge: true }
             );
-
             setText("");
             setTimeout(
                 () => bottomRef.current?.scrollIntoView({ behavior: "smooth" }),
@@ -255,13 +309,13 @@ const Message = () => {
 
     // Lấy peerId từ memberIds để hiển thị ở danh sách conv
     const getPeerIdFromConv = (memberIds = []) => {
-        if (!currentUid) return "";
         const a = String(memberIds?.[0] ?? "");
         const b = String(memberIds?.[1] ?? "");
         if (a === currentUid) return b;
         if (b === currentUid) return a;
         return memberIds?.find((m) => String(m) !== String(currentUid)) || "";
     };
+
 
     return (
         <div className="msg-page" style={pageStyle}>
@@ -277,12 +331,22 @@ const Message = () => {
                             <div
                                 key={c.id}
                                 className={`msg-conversation-item ${active ? "active" : ""}`}
-                                onClick={() => {
+                                onClick={async () => {
                                     setActiveConv(c.id);
                                     setConvId(c.id);
+                                    setActivePeerId(getPeerIdFromConv(c.memberIds) || null);
+                                    await markConversationRead(c.id, currentUid);
                                 }}
                             >
-                                <div className="msg-conv-title">{peer ? `User ${peer}` : c.id}</div>
+                                {/* Hiển thị tin nhắn chưa đọc */}
+                                <div className="msg-conv-title">
+                                    {peer ? `User ${peer}` : c.id}
+                                    {c.lastMessageAt &&
+                                        c.lastMessageBy !== currentUid &&
+                                        (!c.lastReadAt || !c.lastReadAt?.[currentUid] ||
+                                            c.lastMessageAt.toMillis() > c.lastReadAt[currentUid]?.toMillis?.()) && (
+                                            <span className="msg-unread-dot" />)}
+                                </div>
                                 <div className="msg-conv-sub">{c.lastMessageText || "(chưa có tin nhắn)"}</div>
                                 <div className="msg-conv-time">{c.lastMessageAt ? fmtTime(c.lastMessageAt) : ""}</div>
                             </div>
@@ -304,7 +368,6 @@ const Message = () => {
                             onClick={() => handleOpenChatWith(u.id)}
                         >
                             <div className="msg-conv-title">{u.name || `User #${u.id}`}</div>
-                            <div className="msg-conv-sub">ID: {u.id}</div>
                         </div>
                     ))}
                 </div>
@@ -327,11 +390,24 @@ const Message = () => {
                         <div className="msg-messages">
                             {messages.map((m) => {
                                 const mine = String(m.senderId) === String(currentUid);
+                                const avatarUrl = mine
+                                    ? (currentUser?.avatar || "/asset/img/humanStudying.png")
+                                    : (activePeerProfile?.avatar || "/asset/img/humanStudying.png");
+
                                 return (
                                     <div key={m.id} className={`msg-row ${mine ? "mine" : "other"}`}>
+                                        {!mine && (
+                                            <img src={avatarUrl} alt="avatar" className="msg-avatar" />
+                                        )}
                                         <div className="msg-bubble">
                                             <div className="msg-text">{m.text}</div>
+                                            {m.createdAt && (
+                                                <div className="msg-time">{fmtTime(m.createdAt)}</div>
+                                            )}
                                         </div>
+                                        {mine && (
+                                            <img src={avatarUrl} alt="avatar" className="msg-avatar" />
+                                        )}
                                     </div>
                                 );
                             })}

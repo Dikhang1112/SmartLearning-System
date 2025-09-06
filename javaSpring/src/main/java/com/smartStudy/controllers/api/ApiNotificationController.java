@@ -1,5 +1,4 @@
 package com.smartStudy.controllers.api;
-
 import com.smartStudy.dto.NotificationDTO;
 import com.smartStudy.pojo.Notification;
 import com.smartStudy.pojo.Student;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.*;
 
 @RestController
@@ -82,19 +80,17 @@ public class ApiNotificationController {
         return ResponseEntity.ok(NotificationDTO.fromEntity(saved));
     }
     @PutMapping(value = "/notifications/read-all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> markAllRead(@RequestParam("studentId") Integer studentId) {
-        if (studentId == null) {
-            return ResponseEntity.badRequest().body(
-                    java.util.Map.of("ok", false, "error", "studentId is required"));
+    public ResponseEntity<?> markAllRead(
+            @RequestParam(required = false) Integer studentId,
+            @RequestParam(required = false) Integer teacherId,
+            @RequestParam(required = false) String type
+    ) {
+        if (studentId == null && teacherId == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "error", "studentId or teacherId is required"));
         }
-        try {
-            // service/repo của bạn đã có hàm markAllRead(studentId)
-            notifcationService.markAllRead(studentId);
-            return ResponseEntity.ok(java.util.Map.of("ok", true));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(
-                    java.util.Map.of("ok", false, "error", e.getMessage()));
-        }
+        int updated = notifcationService.markAllRead(studentId, teacherId, type);
+        return ResponseEntity.ok(Map.of("ok", true, "updated", updated));
     }
 
     // --- request body class dành cho POST ---

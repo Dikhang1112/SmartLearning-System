@@ -93,6 +93,58 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    public void sendNoticeSubmit(String teacherEmail,
+                                 String teacherName,
+                                 String studentName,
+                                 String exerciseTitle,
+                                 Long submissionId,
+                                 String viewUrl) {
+        if (teacherEmail == null || teacherEmail.isBlank()) return;
+
+        try {
+            var msg = mailSender.createMimeMessage();
+            var h = new MimeMessageHelper(msg, "UTF-8");
+
+            // From: tài khoản hệ thống; tên hiển thị: SmartStudy Bot (hoặc Teacher Name nếu bạn thích)
+            h.setFrom(new InternetAddress(systemFrom, "SmartStudy"));
+            h.setTo(teacherEmail);
+
+            String safeTeacher = (teacherName == null || teacherName.isBlank()) ? "Thầy/Cô" : teacherName;
+            String safeStudent = (studentName == null || studentName.isBlank()) ? "Sinh viên" : studentName;
+            String safeTitle   = (exerciseTitle == null || exerciseTitle.isBlank()) ? "Bài tập" : exerciseTitle;
+
+            // Link xem bài nộp cho giáo viên:
+            String link = (viewUrl == null || viewUrl.isBlank())
+                    ? feUrl + "/teacher/submissions/" + (submissionId == null ? "" : submissionId)
+                    : viewUrl;
+
+            String subject = "[SmartStudy] " + safeStudent + " đã nộp bài: " + safeTitle;
+            h.setSubject(subject);
+
+            String html = """
+            <p>Xin chào %s,</p>
+            <p><b>%s</b> vừa <b>nộp bài</b> <b>%s</b>.</p>
+            <ul>
+              <li>Mã bài nộp: <b>%s</b></li>
+            </ul>
+            <p>Trân trọng,<br/>SmartStudy</p>
+        """.formatted(
+                    safeTeacher,
+                    safeStudent,
+                    safeTitle,
+                    (submissionId == null ? "" : submissionId.toString()),
+                    link, link
+            );
+
+            h.setText(html, true);
+            mailSender.send(msg);
+        } catch (Exception ex) {
+            // TODO: ghi log nếu cần
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
     public void sendPlainText(String to, String subject, String content) {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom(systemFrom);

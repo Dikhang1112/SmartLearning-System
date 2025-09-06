@@ -59,7 +59,7 @@ const ModalSubmission = ({ open, onClose, chapter, loading, error, responses }) 
             feedback: feedback ?? "",
         };
         try {
-            await Apis.post(endpoints.email, payload);
+            Apis.post(endpoints.email, payload);
             return true;
         } catch (err) {
             console.error("Send graded email error:", err);

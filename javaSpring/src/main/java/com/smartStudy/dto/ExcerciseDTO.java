@@ -7,13 +7,16 @@ public class ExcerciseDTO {
     private String type;
     private ChapterDTO chapter;
 
-    public ExcerciseDTO(Integer id, String title, String description, String type, ChapterDTO chapter)
+    private UserSimpleDTO createdBy;
+
+    public ExcerciseDTO(Integer id, String title, String description, String type, ChapterDTO chapter, UserSimpleDTO u)
     {
         this.id = id;
         this.title = title;
         this.description = description;
         this.type = type;
         this.chapter = chapter;
+        this.createdBy = u;
     }
 
     public Integer getId() {
@@ -54,5 +57,13 @@ public class ExcerciseDTO {
 
     public void setChapter(ChapterDTO chapter) {
         this.chapter = chapter;
+    }
+
+    public UserSimpleDTO getcreatedBy() {
+        return createdBy;
+    }
+
+    public void setcreatedBy(UserSimpleDTO createdBy) {
+        this.createdBy = createdBy;
     }
 }

@@ -8,7 +8,8 @@ public class UserSimpleDTO {
     public UserSimpleDTO() {
     }
 
-    public UserSimpleDTO(String name,String email) {
+    public UserSimpleDTO(Integer id, String name,String email) {
+        this.id = id;
         this.name = name;
         this.email = email;
     }

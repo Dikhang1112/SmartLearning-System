@@ -8,5 +8,5 @@ import java.util.Map;
 public interface NotifcationService {
     Notification saveOrUpdate (Notification no);
     List<Notification> getNotifications (Map<String,String> params);
-    void markAllRead(int studentId);
+    int markAllRead(Integer studentId, Integer teacherId, String type);
 }

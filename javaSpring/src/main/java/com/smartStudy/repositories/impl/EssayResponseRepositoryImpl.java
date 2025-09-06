@@ -64,7 +64,7 @@ public class EssayResponseRepositoryImpl implements EssayResponseRepository {
                             es.grade,
                             new com.smartStudy.dto.StudentSimpleDTO(
                                 st.id,
-                                new com.smartStudy.dto.UserSimpleDTO(u.name,u.email)  
+                                new com.smartStudy.dto.UserSimpleDTO(u.id, u.name,u.email)  
                             )
                         )
                     )

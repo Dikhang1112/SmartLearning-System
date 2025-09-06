@@ -13,9 +13,10 @@ public interface EmailService {
                           String viewUrl,
                           Integer grade,
                           String feedback);
+    void sendNoticeSubmit(String teacherEmail, String teacherName, String studentName, String exerciseTitle,
+                          Long submissionId, String viewUrl);
     void sendPlainText(String to, String subject, String content);
     void sendOtpEmail(String to, String otp, long ttlMinutes);
-
     void remindStudy(LocalDate date);
     void remindStudy(Integer studentId,LocalDate date);
 

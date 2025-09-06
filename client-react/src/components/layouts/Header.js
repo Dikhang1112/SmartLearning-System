@@ -49,44 +49,49 @@ const Header = () => {
     setNotifItems([]);
     setBadgeCount(0);
   };
-  // Lấy studentId từ context (tuỳ DTO: user.userId hoặc user.id)
-  const getStudentId = () => {
+  // Lấy role hiện tại (STUDENT/TEACHER)
+  const getRole = () => {
     const u = (user && (user.user || user)) || {};
-    return u.userId ?? u.id ?? null;
+    return (u.role || u.roles || '').toString().toUpperCase();
   };
+
+  // Lấy cặp {key, id, role} cho truy vấn thông báo
+  //  - Teacher: key='teacherId', type=EXERCISE
+  //  - Student: key='studentId', type=SUBMISSION
+  const getViewerKeyAndId = () => {
+    const u = (user && (user.user || user)) || {};
+    const id = u.userId ?? u.id ?? null;
+    const role = getRole();
+    const isTeacher = role.includes('TEACHER');
+    return { key: isTeacher ? 'teacherId' : 'studentId', id, role };
+  };
+  //Profile
   const handleUserProfile = () => {
-    const id = getStudentId();
+    const id = user?.id || null;
     if (id) nav(`/profile/${id}`);
   };
   // ✅ Đếm số thông báo CHƯA ĐỌC (isReaded=false)
   const fetchUnreadCount = async () => {
-    const sid = getStudentId();
-    if (!sid) {
-      setBadgeCount(0);
-      return;
-    }
+    const { key, id, role } = getViewerKeyAndId();
+    if (!id) { setBadgeCount(0); return; }
     try {
-      // Dùng endpoint hiện có: GET /api/notifications?studentId=..&isReaded=false
-      const url = `${endpoints.notifications}?studentId=${sid}&isReaded=false&limit=50&order=desc&sortBy=id`;
+      let url = `${endpoints.notifications}?${key}=${id}&isReaded=false&limit=50&order=desc&sortBy=id`;
+      url += role.includes('TEACHER') ? `&type=EXERCISE` : `&type=SUBMISSION`;
       const res = await Apis.get(url);
       const data = Array.isArray(res.data) ? res.data : [];
       setBadgeCount(data.length);
     } catch (e) {
       console.error("Fetch unread-count error:", e);
-      // Không đổi badgeCount để tránh nhấp nháy
     }
   };
-
   // Lấy danh sách khi mở dropdown
   const fetchNotifications = async () => {
-    const sid = getStudentId();
-    if (!sid) {
-      setNotifItems([]);
-      return;
-    }
+    const { key, id, role } = getViewerKeyAndId();
+    if (!id) { setNotifItems([]); return; }
     try {
       setNotifLoading(true);
-      const url = `${endpoints.notifications}?studentId=${sid}&limit=10&order=desc&sortBy=id`;
+      let url = `${endpoints.notifications}?${key}=${id}&limit=10&order=desc&sortBy=id`;
+      url += role.includes('TEACHER') ? `&type=EXERCISE` : `&type=SUBMISSION`;
       const res = await Apis.get(url);
       setNotifItems(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
@@ -97,25 +102,6 @@ const Header = () => {
     }
   };
 
-  // ✅ Đánh dấu tất cả đã đọc trên SERVER (nếu có) + cập nhật UI
-  const markAllRead = useCallback(async () => {
-    const u = (user && (user.user || user)) || {};
-    const sid = u.userId ?? u.id ?? null;
-
-    // UI trước để badge=0 ngay
-    setNotifItems(prev => prev.map(n => ({ ...n, isReaded: true })));
-    setBadgeCount(0);
-
-    if (!sid) return;
-    try {
-      const readAllUrl = `${endpoints.notifications}/read-all?studentId=${sid}`;
-      await Apis.put(readAllUrl);
-    } catch (e) {
-      console.warn("Mark all read API failed:", e?.response?.status || e);
-    }
-  }, [user, endpoints.notifications]);
-
-  // Toggle dropdown + load data khi mở
   const toggleNotif = async () => {
     const nowOpen = !showNotif;
     setShowNotif(nowOpen);
@@ -124,6 +110,21 @@ const Header = () => {
       // Notification component sẽ gọi onMarkAllRead() khi open ⇒ sẽ chạy markAllRead()
     }
   };
+  const markAllRead = useCallback(async () => {
+    // UI trước để badge=0 ngay
+    setNotifItems(prev => prev.map(n => ({ ...n, isReaded: true })));
+    setBadgeCount(0);
+
+    const { key, id, role } = getViewerKeyAndId();
+    if (!id) return;
+    try {
+      let readAllUrl = `${endpoints.notifications}/read-all?${key}=${id}`;
+      readAllUrl += role.includes('TEACHER') ? `&type=EXERCISE` : `&type=SUBMISSION`;
+      await Apis.put(readAllUrl);
+    } catch (e) {
+      console.warn("Mark all read API failed:", e?.response?.status || e);
+    }
+  }, [user, endpoints.notifications]);
 
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {

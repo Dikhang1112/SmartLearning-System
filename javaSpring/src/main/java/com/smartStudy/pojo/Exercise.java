@@ -3,7 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.smartStudy.pojo;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
@@ -40,7 +39,6 @@ import java.util.List;
     @NamedQuery(name = "Exercise.findByType", query = "SELECT e FROM Exercise e WHERE e.type = :type"),
     @NamedQuery(name = "Exercise.findByCreatedAt", query = "SELECT e FROM Exercise e WHERE e.createdAt = :createdAt")})
 public class Exercise implements Serializable {
-
     @Size(max = 200)
     @Column(name = "title")
     private String title;
@@ -53,6 +51,9 @@ public class Exercise implements Serializable {
     @Size(min = 1, max = 5)
     @Column(name = "type")
     private String type;
+    @JoinColumn(name = "created_by", referencedColumnName = "user_id")
+    @ManyToOne
+    private Teacher createdBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "exerciseId")
     @JsonIgnore
     private List<ExerciseQuestion> exerciseQuestionList;
@@ -174,6 +175,14 @@ public class Exercise implements Serializable {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Teacher getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Teacher createdBy) {
+        this.createdBy = createdBy;
     }
     
 }

@@ -2,7 +2,9 @@
 package com.smartStudy.controllers.api;
 
 import com.smartStudy.services.EmailService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.*;
@@ -12,7 +14,8 @@ import java.util.Map;
 @RequestMapping("/api/email")
 public class ApiEmailController {
 
-    private final EmailService emailService;
+    @Autowired
+    private EmailService emailService;
     public ApiEmailController(EmailService emailService) { this.emailService = emailService; }
 
     // Teacher -> Student (đã chấm bài)
@@ -141,5 +144,60 @@ public class ApiEmailController {
             this.feedback = feedback;
         }
     }
+
+    @PostMapping(value = "/submit",consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> sendSubmitNotice(@RequestBody SubmitNoticeRequest req) {
+        // Validate tối thiểu
+        if (req == null || req.getTeacherEmail() == null || req.getTeacherEmail().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "teacherEmail is required"));
+        }
+
+        try {
+            emailService.sendNoticeSubmit(
+                    req.getTeacherEmail(),
+                    req.getTeacherName(),
+                    req.getStudentName(),
+                    req.getExerciseTitle(),
+                    req.getSubmissionId(),
+                    req.getViewUrl()
+            );
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "OK",
+                    "message", "Notice email queued/sent",
+                    "to", req.getTeacherEmail(),
+                    "submissionId", req.getSubmissionId()
+            ));
+        } catch (Exception ex) {
+            // tuỳ bạn log thêm
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to send email", "detail", ex.getMessage()));
+        }
+    }
+
+    /** Request body cho /submit (đơn giản để test Postman) */
+    public static class SubmitNoticeRequest {
+        private String teacherEmail;
+        private String teacherName;
+        private String studentName;
+        private String exerciseTitle;
+        private Long submissionId;
+        private String viewUrl;
+
+        public String getTeacherEmail() { return teacherEmail; }
+        public void setTeacherEmail(String teacherEmail) { this.teacherEmail = teacherEmail; }
+        public String getTeacherName() { return teacherName; }
+        public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
+        public String getStudentName() { return studentName; }
+        public void setStudentName(String studentName) { this.studentName = studentName; }
+        public String getExerciseTitle() { return exerciseTitle; }
+        public void setExerciseTitle(String exerciseTitle) { this.exerciseTitle = exerciseTitle; }
+        public Long getSubmissionId() { return submissionId; }
+        public void setSubmissionId(Long submissionId) { this.submissionId = submissionId; }
+        public String getViewUrl() { return viewUrl; }
+        public void setViewUrl(String viewUrl) { this.viewUrl = viewUrl; }
+    }
+
 }
 

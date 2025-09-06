@@ -1,13 +1,18 @@
 package com.smartStudy.controllers.api;
 
+import com.smartStudy.dto.UserSimpleDTO;
+import com.smartStudy.pojo.User;
+import org.hibernate.Session;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+
 import com.smartStudy.dto.ChapterDTO;
 import com.smartStudy.dto.ExcerciseDTO;
 import com.smartStudy.dto.SubjectDTO;
 import com.smartStudy.pojo.Chapter;
 import com.smartStudy.pojo.Exercise;
 import com.smartStudy.pojo.Subject;
-import com.smartStudy.pojo.Teacher; // nếu cần
 import com.smartStudy.services.ExcerciseService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +30,15 @@ public class ApiExcerciseController {
     @Autowired
     private ExcerciseService excerciseService;
 
-    @GetMapping("/excercises")
+    // Trong class ApiExcerciseController
+    @Autowired
+    private LocalSessionFactoryBean factory;
+
+    private Session session() {
+        return factory.getObject().getCurrentSession();
+    }
+
+    @GetMapping("/exercises")
     public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
         List<Exercise> items = excerciseService.getExercises(params);
         long total = excerciseService.countExercises(params);
@@ -81,23 +94,25 @@ public class ApiExcerciseController {
         excerciseService.delete(id);
         return ResponseEntity.noContent().build();
     }
-    // ----------------- helpers -----------------
 
+    // ----------------- helpers -----------------
     private ExcerciseDTO toDto(Exercise e) {
         ChapterDTO chapterDTO = null;
-        Chapter chapter = e.getChapterId(); // tên getter đúng theo entity của bạn
+        Chapter chapter = e.getChapterId();
+
         if (chapter != null) {
             SubjectDTO subjectDTO = null;
 
-            // lấy Subject từ Chapter
+            // lấy Subject từ Chapter (giữ nguyên ý tưởng reflection của bạn)
             Subject subject = null;
             try {
-                // tuỳ entity: getSubjectId() hoặc getSubject()
                 subject = (Subject) chapter.getClass().getMethod("getSubjectId").invoke(chapter);
             } catch (Exception ex) {
                 try {
                     subject = (Subject) chapter.getClass().getMethod("getSubject").invoke(chapter);
-                } catch (Exception ignored) { /* no-op */ }
+                } catch (Exception ignored) {
+                    // no-op
+                }
             }
 
             if (subject != null) {
@@ -117,12 +132,24 @@ public class ApiExcerciseController {
             );
         }
 
+        // createdBy -> UserSimpleDTO
+        UserSimpleDTO createdByDTO = null;
+        if (e.getCreatedBy() != null && e.getCreatedBy().getUser() != null) {
+            User t = e.getCreatedBy().getUser();
+            createdByDTO = new UserSimpleDTO(
+                    t.getId(),      // ghi chú của bạn: khóa chính là userId/ id theo entity User
+                    t.getName(),
+                    t.getEmail()
+            );
+        }
+
         return new ExcerciseDTO(
                 e.getId(),
                 e.getTitle(),
                 e.getDescription(),
                 e.getType(),
-                chapterDTO
+                chapterDTO,
+                createdByDTO
         );
     }
 }

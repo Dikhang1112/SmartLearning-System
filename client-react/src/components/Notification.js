@@ -71,10 +71,18 @@ const Notification = ({ open, items = [], loading = false, onClose, onMarkAllRea
                         <div className="d-flex align-items-center">
                             <div className="flex-grow-1">
                                 <div className="notif-title">{n.title}</div>
-                                <div className="notif-message">Giáo viên {n.teacher.name} đã chấm bài làm của bạn</div>
+                                <div className="notif-message">
+                                    {/* Ưu tiên message từ server; fallback theo type */}
+                                    {(n.type === 'SUBMISSION'
+                                        ? `${n.teacher?.name || ''} đã chấm bài làm của bạn`
+                                        : n.type === 'EXERCISE'
+                                            ? `${n.student?.name || ''} đã nộp bài`
+                                            : ''
+                                    )
+                                    }
+                                </div>
                             </div>
                         </div>
-                        {/* Type + thời gian chung 1 dòng (căn phải) */}
                         <div className="notif-meta d-flex align-items-center">
                             <span className="badge text-bg-light">{n.type}</span>
                             <small className="text-muted ms-auto">{timeAgo(n.sentAt)}</small>

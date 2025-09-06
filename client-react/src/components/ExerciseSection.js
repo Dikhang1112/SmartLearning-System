@@ -337,6 +337,16 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
                 initialGrade: res.data?.grade ?? null,
             });
             showSuccess(`Đã nộp bài "${ex.title}".`);
+            if (ex.type === 'ESSAY') {
+                // Gửi mail + notification cho Teacher
+                sendMail(ex, res.data);
+                postNotification({
+                    studentId,
+                    teacherId: ex.createdBy?.id || ex.created_by?.id || null,
+                    exerciseTitle: ex.title,
+                    submissionId: res.data?.id,
+                });
+            }
             await recalculateProgress();
         } catch (e) {
             console.error(e);
@@ -345,6 +355,62 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
             setSubmitting(s => ({ ...s, [ex.id]: false }));
         }
     }
+
+    // === Gửi email cho Teacher khi Student nộp bài ===
+    const sendMail = useCallback(async (ex, submission) => {
+        if (!ex || !submission) return;
+        try {
+            // Lấy thông tin teacher từ exercise.createdBy
+            const teacher = ex.createdBy || ex.created_by || {};
+            const teacherEmail = teacher.email || teacher.user?.email;
+            const teacherName = teacher.name || teacher.user?.name || 'Thầy/Cô';
+
+            if (!teacherEmail) {
+                console.warn('sendMail: thiếu teacherEmail, bỏ qua gửi mail');
+                return;
+            }
+
+            // Lấy tên SV từ context (có thể tuỳ biến theo cấu trúc user của bạn)
+            const studentName =
+                user?.name || user?.fullName || user?.username || `Student#${studentId}`;
+
+            const payload = {
+                teacherEmail,
+                teacherName,
+                studentName,
+                exerciseTitle: ex.title,
+                submissionId: submission.id,
+                viewUrl: ''
+            };
+
+            await authApis().post('email/submit', payload);
+        } catch (err) {
+            console.warn('sendMail failed:', err?.response?.data || err.message);
+        }
+    }, [user, studentId]);
+
+
+    // === Gửi notification cho GV ===
+    const postNotification = async ({ studentId, teacherId, exerciseTitle, submissionId }) => {
+        const payload = {
+            studentId,
+            teacherId,
+            type: 'EXERCISE',
+            title: `Học sinh đã nộp bài tập ${exerciseTitle || 'Bài tập'}`,
+            message: `Mã bài nộp #${submissionId}\nVui lòng vào hệ thống để xem chi tiết và chấm điểm.`,
+            isReaded: false,
+        };
+        try {
+            // ✅ cũng phải authApis().post(...)
+            await authApis().post(endpoints.notifications, payload);
+            return true;
+        } catch (err) {
+            console.error('Post notification error:', err?.response?.data || err.message);
+            return false;
+        }
+    };
+
+
     const recalculateProgress = async () => {
         if (role !== 'STUDENT' || !user?.id) return;
         try {
@@ -355,6 +421,7 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
             console.error('Error recalculating progress:', err.response?.data || err.message);
         }
     };
+
 
     // --- Nhóm MCQ / ESSAY ---
     const mcqExercises = useMemo(
@@ -483,7 +550,7 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
                                         <button
                                             className="ex-save-btn"
                                             onClick={() => onSave(ex)}
-                                            disabled={!!saving[ex.id]}          // ⬅️ KHÔNG khóa theo COMPLETED/GRADED
+                                            disabled={!!saving[ex.id]}
                                             style={{ minWidth: 120 }}
                                         >
                                             {saving[ex.id] ? 'Đang lưu...' : 'Lưu bài'}
@@ -491,10 +558,10 @@ const ExerciseSection = ({ chapterId, role = 'TEACHER' }) => {
                                         <button
                                             className="ex-submit-btn"
                                             onClick={() => onSubmit(ex)}
-                                            disabled={!!submitting[ex.id]}       // ⬅️ KHÔNG khóa theo COMPLETED/GRADED
+                                            disabled={!!submitting[ex.id]}
                                             style={{ minWidth: 120 }}
                                         >
-                                            {submitting[ex.id] ? 'Đang nộp...' : 'Nộp bài'}  {/* ⬅️ Bỏ nhãn “Đã nộp” */}
+                                            {submitting[ex.id] ? 'Đang nộp...' : 'Nộp bài'}
                                         </button>
                                     </div>
                                 )}

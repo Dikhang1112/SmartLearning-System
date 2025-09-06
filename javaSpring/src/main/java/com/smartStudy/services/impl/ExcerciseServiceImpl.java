@@ -2,7 +2,7 @@ package com.smartStudy.services.impl;
 
 import com.smartStudy.pojo.Chapter;
 import com.smartStudy.pojo.Exercise;
-import com.smartStudy.pojo.Subject;
+import com.smartStudy.pojo.Teacher;
 import com.smartStudy.repositories.ExerciseRepository;
 import com.smartStudy.services.ExcerciseService;
 import org.hibernate.Session;
@@ -77,6 +77,12 @@ public class ExcerciseServiceImpl implements ExcerciseService {
             if (c == null) return null;
             ex.setChapterId(c);
         }
+        if (ex.getCreatedBy() != null && ex.getCreatedBy().getUserId() != null) {
+            Teacher t = session().get(Teacher.class, ex.getCreatedBy().getUserId());
+            if (t == null)
+                throw new IllegalArgumentException("createdBy không hợp lệ");
+            ex.setCreatedBy(t);
+        }
         return this.exerciseRepository.save(ex);
     }
 
@@ -85,7 +91,7 @@ public class ExcerciseServiceImpl implements ExcerciseService {
         Exercise old = exerciseRepository.findById(id);
         if (old == null) return null;
 
-        if (ex.getTitle() != null)       old.setTitle(ex.getTitle());          // SỬA: check ex, không phải old
+        if (ex.getTitle() != null)       old.setTitle(ex.getTitle());
         if (ex.getDescription() != null) old.setDescription(ex.getDescription());
         if (ex.getType() != null)        old.setType(ex.getType().toUpperCase());
 
@@ -93,6 +99,12 @@ public class ExcerciseServiceImpl implements ExcerciseService {
         if (cid != null) {
             Chapter ch = session().get(Chapter.class, cid);
             if (ch != null) old.setChapterId(ch);
+        }
+        if (ex.getCreatedBy() != null && ex.getCreatedBy().getUserId() != null) {
+            Teacher t = session().get(Teacher.class, ex.getCreatedBy().getUserId());
+            if (t == null)
+                throw new IllegalArgumentException("createdBy không hợp lệ");
+            old.setCreatedBy(t);
         }
 
         return this.exerciseRepository.save(old);

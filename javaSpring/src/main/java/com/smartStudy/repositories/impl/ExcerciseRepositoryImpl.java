@@ -66,17 +66,7 @@ public class ExcerciseRepositoryImpl implements ExerciseRepository {
             // createdBy (userId)
             String createdBy = params.get("createdBy");
             if (createdBy != null && !createdBy.isBlank()) {
-                predicates.add(b.equal(root.get("createdBy").get("id"), Integer.parseInt(createdBy)));
-            }
-
-            // createdAt from/to (yyyy-MM-dd)
-            String from = params.get("createdFrom");
-            if (from != null && !from.isBlank()) {
-                predicates.add(b.greaterThanOrEqualTo(root.get("createdAt"), java.sql.Date.valueOf(from)));
-            }
-            String to = params.get("createdTo");
-            if (to != null && !to.isBlank()) {
-                predicates.add(b.lessThanOrEqualTo(root.get("createdAt"), java.sql.Date.valueOf(to)));
+                predicates.add(b.equal(root.get("createdBy").get("userId"), Integer.parseInt(createdBy)));
             }
         }
 
@@ -120,16 +110,7 @@ public class ExcerciseRepositoryImpl implements ExerciseRepository {
 
             String createdBy = params.get("createdBy");
             if (createdBy != null && !createdBy.isBlank()) {
-                predicates.add(b.equal(root.get("createdBy").get("id"), Integer.parseInt(createdBy)));
-            }
-
-            String from = params.get("createdFrom");
-            if (from != null && !from.isBlank()) {
-                predicates.add(b.greaterThanOrEqualTo(root.get("createdAt"), java.sql.Date.valueOf(from)));
-            }
-            String to = params.get("createdTo");
-            if (to != null && !to.isBlank()) {
-                predicates.add(b.lessThanOrEqualTo(root.get("createdAt"), java.sql.Date.valueOf(to)));
+                predicates.add(b.equal(root.get("createdBy").get("userId"), Integer.parseInt(createdBy)));
             }
         }
 

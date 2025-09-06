@@ -6,6 +6,7 @@ import '../static/login.css';
 import cookie from "react-cookies";
 import { useContext } from "react";
 import { MyUserDispatchContext } from "../reducers/MyUserReducer";
+import { showError } from "../utils/toast";
 
 /* global google */ // Thêm comment này để thông báo ESLint rằng 'google' là global từ SDK
 
@@ -49,7 +50,6 @@ const AuthGoogle = ({ onLoginSuccess }) => {
     }, []);
 
     const handleCredentialResponse = async (response) => {
-        console.log("Google idToken received: ", response.credential);
         try {
             const res = await Apis.post(apiUrl(endpoints.authGoogle), { idToken: response.credential });
             const token = res.data.token;
@@ -58,7 +58,7 @@ const AuthGoogle = ({ onLoginSuccess }) => {
             if (onLoginSuccess) onLoginSuccess(token);
         } catch (error) {
             console.error("Google login failed - Full error:", error.response?.data || error.message, error.response?.status);
-            alert("Đăng nhập bằng Google thất bại. Vui lòng thử lại! Chi tiết: " + (error.response?.data || error.message));
+            showError("Đăng nhập bằng Google thất bại. Vui lòng thử lại! Chi tiết: " + (error.response?.data || error.message));
         }
     };
     return <div id="google-signin-btn" className="google-signin-btn" />;

@@ -63,7 +63,6 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             where.add(cb.equal(root.get("studentId").get("userId"), studentId));
             // nếu PK của Student là "id": root.get("studentId").get("id")
         }
-
         Boolean isReaded = parseBool(params.get("isReaded"));
         if (isReaded != null) {
             if (Boolean.TRUE.equals(isReaded)) {

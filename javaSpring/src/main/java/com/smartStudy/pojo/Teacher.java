@@ -23,6 +23,9 @@ import java.util.List;
     @NamedQuery(name = "Teacher.findByUserId", query = "SELECT t FROM Teacher t WHERE t.userId = :userId")})
 public class Teacher implements Serializable {
 
+    @OneToMany(mappedBy = "createdBy")
+    private List<Exercise> exerciseList;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "teacherId")
     @JsonIgnore
     private List<Notification> notificationList;
@@ -131,5 +134,13 @@ public class Teacher implements Serializable {
 
     public void setNotificationList(List<Notification> notificationList) {
         this.notificationList = notificationList;
+    }
+
+    public List<Exercise> getExerciseList() {
+        return exerciseList;
+    }
+
+    public void setExerciseList(List<Exercise> exerciseList) {
+        this.exerciseList = exerciseList;
     }
 }

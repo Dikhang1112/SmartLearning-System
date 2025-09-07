@@ -17,6 +17,7 @@ import Chapter from './components/Chapter';
 import SubmissionChapter from './components/SubmissionChapter';
 import Message from './components/Message';
 import ChatAI from './components/ChatAI';
+import ChatbotAI from './components/ChatbotAI';
 import { endpoints, authApis } from './configs/Apis';
 import cookie from 'react-cookies';
 import 'react-toastify/dist/ReactToastify.css';
@@ -84,6 +85,7 @@ function App() {
                 draggable
                 pauseOnHover
               />
+              {user && user.role === "STUDENT" && <ChatbotAI />}
             </BrowserRouter>
           </SidebarProvider>
         </MyUserDispatchContext.Provider>

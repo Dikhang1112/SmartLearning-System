@@ -4,11 +4,8 @@
  */
 package com.smartStudy.repositories.impl;
 
-import com.smartStudy.pojo.Student;
+import com.smartStudy.pojo.*;
 import com.smartStudy.statictis.SubjectStat;
-import com.smartStudy.pojo.Subject;
-import com.smartStudy.pojo.Teacher;
-import com.smartStudy.pojo.User;
 import com.smartStudy.repositories.SubjectRepository;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.*;
@@ -134,19 +131,30 @@ public class SubjectRepositoryImpl implements SubjectRepository {
     }
 
 
+    @Transactional
     @Override
     public void deleteSubject(int id) {
         Session session = getCurrentSession();
-        Subject s = this.getSubjectById(id);
-        //Xóa subject khỏi subjectList của từng teacher liên quan (Quan hệ many-many)
+        Subject s = session.get(Subject.class, id);
+        if (s == null) return;
         if (s.getTeacherList() != null) {
-            for (Teacher t : s.getTeacherList()) {
-                t.getSubjectList().remove(s);
+            for (Teacher t : new ArrayList<>(s.getTeacherList())) {
+                t.getSubjectList().remove(s); // owning side
+                s.getTeacherList().remove(t); // inverse side (để bộ nhớ/collection sạch)
+
             }
         }
 
+        if (s.getStudentList() != null) {
+            for (Student st : new ArrayList<>(s.getStudentList())) {
+                st.getSubjectList().remove(s); // owning side (nếu Student là owning)
+                s.getStudentList().remove(st);
+                // session.merge(st);
+            }
+        }
         session.remove(s);
     }
+
 
 
     @Override

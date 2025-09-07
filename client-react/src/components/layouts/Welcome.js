@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import '../../static/welcome.css';
 import humanStudying from '../../asset/img/humanStudying.png';
 import Login from '../Login'; // Adjust the import path to your login.js
 import '../../static/login.css';    // Import your login.css
+import { MyUserContext } from '../../reducers/MyUserReducer';
+import { useNavigate } from 'react-router-dom';
 
 const Welcome = () => {
     const [showLogin, setShowLogin] = useState(false);
+    const user = useContext(MyUserContext);
+    const nav = useNavigate();
+    if (user != null) {
+        user.role === "student" ? nav("/studentDashboard") : nav("/teacherDashboard");
+    }
 
     return (
         <div className="welcome-container">

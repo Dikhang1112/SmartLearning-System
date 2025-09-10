@@ -56,7 +56,7 @@ public class SpringSecurityConfig {
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/login").permitAll() // cho phép trang login, static
-                        .requestMatchers("/javaSpring").hasRole("ADMIN") // chỉ ADMIN mới vào được trang "/"
+                        .requestMatchers("/javaSpring").hasRole("ADMIN")// chỉ ADMIN mới vào được trang "/"
                         .requestMatchers("/").hasRole("ADMIN")
                         .requestMatchers( "/api/google-login", "/api/login").permitAll()
                         .requestMatchers("/api/auth/forgot-password").permitAll()

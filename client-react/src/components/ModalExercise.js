@@ -1,33 +1,37 @@
 // components/ModalExercise.js
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Apis, { endpoints } from '../configs/Apis';
 import { showSuccess, showError } from '../utils/toast';
 import '../static/modalChapter.css'; // tái dùng style modal
+import { MyUserContext } from '../reducers/MyUserReducer';
 
 const TYPE_OPTIONS = ['MCQ', 'ESSAY'];
 
 const ModalExercise = ({
     open,
     onClose,
-    chapterId,     // gắn bài tập vào chapter hiện tại
-    initial = null, // có id => edit, null => create
-    onSaved,        // callback reload list sau khi lưu
+    chapterId,      // gắn bài tập vào chapter hiện tại (query param)
+    initial = null,  // có id => edit, null => create
+    onSaved,         // callback reload list sau khi lưu
 }) => {
     const [form, setForm] = useState({
         title: '',
         description: '',
-        type: 'MCQ'
+        type: 'MCQ',
     });
     const [saving, setSaving] = useState(false);
     const [err, setErr] = useState('');
 
+    const user = useContext(MyUserContext);
+
     useEffect(() => {
         if (!open) return;
+
         if (initial) {
             setForm({
                 title: initial.title ?? '',
                 description: initial.description ?? '',
-                type: (initial.type || 'MCQ').toUpperCase()
+                type: (initial.type || 'MCQ').toUpperCase(),
             });
         } else {
             setForm({ title: '', description: '', type: 'MCQ' });
@@ -39,7 +43,7 @@ const ModalExercise = ({
 
     const onChange = (e) => {
         const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
     const validate = () => {
@@ -52,15 +56,25 @@ const ModalExercise = ({
     const submit = async (e) => {
         e.preventDefault();
         const v = validate();
-        if (v) { setErr(v); return; }
+        if (v) {
+            setErr(v);
+            return;
+        }
 
         setSaving(true);
         try {
-            // Backend bạn nhận Exercise entity: gửi chapterId dạng object để bind quan hệ
+            // Lấy teacherId từ context & thời điểm hiện tại
+            const teacherId =
+                (user && (user.id ?? user.userId ?? user.user?.id ?? user.user?.userId)) || null;
+            const created_at = new Date().toISOString(); // ISO 8601
+
+            // Payload gửi lên backend
             const payload = {
                 title: form.title.trim(),
                 description: form.description?.trim() || '',
-                type: form.type.toUpperCase()
+                type: form.type.toUpperCase(),
+                teacherId,   // id của user (giáo viên) đang đăng nhập
+                created_at,  // thời điểm tạo/cập nhật
             };
 
             if (initial?.id) {
@@ -75,6 +89,7 @@ const ModalExercise = ({
             onClose && onClose();
         } catch (e) {
             console.error(e);
+            showError('Lưu bài tập thất bại. Vui lòng thử lại.');
             setErr('Lưu bài tập thất bại. Vui lòng thử lại.');
         } finally {
             setSaving(false);
@@ -86,7 +101,9 @@ const ModalExercise = ({
             <div className="mc-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="mc-header">
                     <h3>{initial ? 'Chỉnh sửa bài tập' : 'Thêm bài tập'}</h3>
-                    <button className="mc-close" onClick={onClose} aria-label="Đóng">✕</button>
+                    <button className="mc-close" onClick={onClose} aria-label="Đóng">
+                        ✕
+                    </button>
                 </div>
 
                 <form className="mc-form" onSubmit={submit}>
@@ -114,15 +131,12 @@ const ModalExercise = ({
                     </div>
 
                     <div className="mc-field">
-                        <label>Loại (type)</label>
-                        <select
-                            name="type"
-                            value={form.type}
-                            onChange={onChange}
-                            required
-                        >
-                            {TYPE_OPTIONS.map(o => (
-                                <option key={o} value={o}>{o}</option>
+                        <label>Loại bài tập (type)</label>
+                        <select name="type" value={form.type} onChange={onChange}>
+                            {TYPE_OPTIONS.map((opt) => (
+                                <option value={opt} key={opt}>
+                                    {opt}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -130,9 +144,11 @@ const ModalExercise = ({
                     {err && <div className="mc-error">{err}</div>}
 
                     <div className="mc-actions">
-                        <button type="button" className="mc-btn ghost" onClick={onClose}>Hủy</button>
+                        <button type="button" className="mc-btn ghost" onClick={onClose}>
+                            Hủy
+                        </button>
                         <button type="submit" className="mc-btn primary" disabled={saving}>
-                            {saving ? 'Đang lưu…' : (initial ? 'Cập nhật' : 'Tạo mới')}
+                            {saving ? 'Đang lưu…' : initial ? 'Cập nhật' : 'Tạo mới'}
                         </button>
                     </div>
                 </form>

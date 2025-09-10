@@ -66,7 +66,7 @@ const AddSchedule = ({ studentId, onClose, onCreated }) => {
 
             if (status === 500) {
                 // BE đang trả 500 khi trùng lịch
-                showWarning("Trùng lịch học");
+                showWarning("Tạo lịch không thành công");
             } else {
                 // fallback cho các lỗi khác (400/401/403/404/…)
                 showError("Tạo lịch thất bại");

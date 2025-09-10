@@ -1,6 +1,7 @@
 package com.smartStudy.controllers;
 
 import com.smartStudy.pojo.User;
+import com.smartStudy.repositories.UserRepository;
 import com.smartStudy.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -19,16 +21,48 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private static final int PAGE_SIZE = 5;
+
     @GetMapping("/login")
     public String loginView() {
         return "login";
     }
 
     @GetMapping("/users")
-    public String userListView(Model model, @RequestParam(required = false) Map<String, String> params) {
-        model.addAttribute("users", userService.getUsers(params));
+    public String listUsers(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam Map<String, String> params,
+            Model model
+    ) {
+        if (page == null) return "redirect:/users?page=1";
+        page = parseInt(params.get("page"), 1);
+        page = Math.max(1, page);
+        params.put("page", String.valueOf(page));
+        List<User> users = userService.getUsers(params);
+        long total = userRepository.countUsers();
+        long totalPages = (total / PAGE_SIZE) + 1;
+        model.addAttribute("users", users);
+        model.addAttribute("page", page);
+        model.addAttribute("size", PAGE_SIZE);
+        model.addAttribute("total", total);
+        model.addAttribute("totalPages", totalPages);
+
         return "users";
     }
+
+
+    // Helper parse int an toàn
+    private int parseInt(String v, int defVal) {
+        try {
+            return (v == null || v.isBlank()) ? defVal : Integer.parseInt(v);
+        } catch (NumberFormatException e) {
+            return defVal;
+        }
+    }
+
 
     @GetMapping("/users/add")
     public String addUserView(Model model) {

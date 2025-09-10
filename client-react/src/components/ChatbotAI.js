@@ -70,7 +70,7 @@ export default function ChatbotAI() {
             {isDialogOpen && (
                 <div className="chatbot-dialog">
                     <div className="dialog-header">
-                        <span>💬 Chat với trợ lý</span>
+                        <span>💬 Chat với trợ lý ảo</span>
                         <button className="close-dialog" onClick={() => setIsDialogOpen(false)}>✖</button>
                     </div>
 

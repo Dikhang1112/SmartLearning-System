@@ -23,7 +23,7 @@ import java.util.Map;
 @Repository
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
-    private static final int PAGE_SIZE = 6;
+    private static final int PAGE_SIZE = 5;
     @Autowired
     private LocalSessionFactoryBean factory;
     @Autowired
@@ -49,13 +49,33 @@ public class UserRepositoryImpl implements UserRepository {
             q.where(predicates.toArray(Predicate[]::new));
         }
         Query query = s.createQuery(q);
-        if (params != null && params.containsKey("page")) {
-            int page = Integer.parseInt(params.get("page"));
-            int start = page  * PAGE_SIZE;
-            query.setMaxResults(PAGE_SIZE);
-            query.setFirstResult(start);
+        int page = 1;
+        if (params != null) {
+            String p = params.get("page");
+            if (p != null && !p.isBlank() && !"null".equalsIgnoreCase(p)) {
+                try {
+                    page = Integer.parseInt(p);
+                } catch (NumberFormatException ignored) {
+                    // giữ nguyên page=1 nếu parse lỗi
+                }
+            }
         }
+        page = Math.max(1, page);
+        int start = (page - 1) * PAGE_SIZE;
+        query.setFirstResult(start);
+        query.setMaxResults(PAGE_SIZE);
+
         return query.getResultList();
+    }
+
+    @Override
+    public long countUsers() {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery <Long> qr = cb.createQuery(Long.class);
+        Root root = qr.from(User.class);
+        qr.select(cb.count(root));
+        return s.createQuery(qr).getSingleResult();
     }
 
     @Override
@@ -102,4 +122,6 @@ public class UserRepositoryImpl implements UserRepository {
         User u = this.getUserByMail(email);
         return  this.passwordEncoder.matches(password,u.getPassword());
     }
+
+
 }

@@ -83,16 +83,21 @@
 
             </table>
         </div>
-
         <!-- Pagination -->
-        <nav class="d-flex justify-content-end mt-3">
+        <nav class="d-flex justify-content-end mt-3" th:if="${totalPages > 0}">
             <ul class="pagination pd-1">
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                <!-- 1..N -->
+                <li class="page-item" style="margin:5px"
+                    th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i} == ${page} ? 'active'">
+                    <a class="page-link"
+                       th:text="${i}"
+                       th:href="@{|/users?page=${i}|}">1</a>
+                </li>
             </ul>
         </nav>
+
+
     </div>
 </main>
 <div th:replace="~{base :: footer}"></div><!-- Modal xác nhận xóa -->

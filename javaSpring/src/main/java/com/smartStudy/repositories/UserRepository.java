@@ -11,4 +11,5 @@ public interface UserRepository {
     void deleteUser(int id);
     User updateUser(User u);
     boolean authenticate (String email, String password);
+    long countUsers();
 }

@@ -11,6 +11,7 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +71,8 @@ public class ExcerciseServiceImpl implements ExcerciseService {
         return this.exerciseRepository.findByChapterId(cid);
     }
 
+    // imports thêm: import java.util.Date;
+
     @Override
     public Exercise create(Exercise ex, Integer chapterId) {
         if (chapterId != null) {
@@ -83,6 +86,8 @@ public class ExcerciseServiceImpl implements ExcerciseService {
                 throw new IllegalArgumentException("createdBy không hợp lệ");
             ex.setCreatedBy(t);
         }
+        if (ex.getCreatedAt() == null) ex.setCreatedAt(new Date());
+
         return this.exerciseRepository.save(ex);
     }
 
@@ -106,9 +111,11 @@ public class ExcerciseServiceImpl implements ExcerciseService {
                 throw new IllegalArgumentException("createdBy không hợp lệ");
             old.setCreatedBy(t);
         }
+        if (ex.getCreatedAt() != null) old.setCreatedAt(ex.getCreatedAt());
 
         return this.exerciseRepository.save(old);
     }
+
 
     @Override
     public void delete(Integer id) {

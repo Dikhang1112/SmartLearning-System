@@ -54,7 +54,6 @@ public class ApiClassController {
 
     @GetMapping("assign/teacher/{teacherId}")
     public List<TeacherAssignmentDTO> getAssignmentsByTeacher(@PathVariable("teacherId") int teacherId) {
-        // Lấy teacher (đã nạp user + subjectList + classList — xem ghi chú bên dưới)
         Teacher t = classService.getTeacherById(teacherId);
         if (t == null) {
             throw new RuntimeException("Teacher not found with id=" + teacherId);

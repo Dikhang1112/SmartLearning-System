@@ -70,7 +70,7 @@ public class SubjectRepositoryImpl implements SubjectRepository {
         Query query = s.createQuery(q);
         if (params != null && params.containsKey("page")) {
             int page = Integer.parseInt(params.get("page"));
-            int start = page  * PAGE_SIZE;
+            int start = page * PAGE_SIZE;
             query.setMaxResults(PAGE_SIZE);
             query.setFirstResult(start);
         }
@@ -95,43 +95,59 @@ public class SubjectRepositoryImpl implements SubjectRepository {
     @Override
     public Subject addOrUpdate(Subject s) {
         Session session = getCurrentSession();
-        // Lưu Subject trước (nếu mới)
+
+        // Lưu Subject (giữ nguyên logic của bạn)
         if (s.getId() == null) {
             session.persist(s);
-            session.flush(); // Đảm bảo lấy được s.getId()
+            session.flush();
         } else {
             session.merge(s);
             session.flush();
         }
-        // Xóa hết liên kết cũ trong bảng trung gian (nếu là update)
-        String delSql = "DELETE FROM teacher_subject WHERE subject_id = :subjectId";
-        session.createNativeQuery(delSql)
-                .setParameter("subjectId", s.getId())
+
+        // 🔧 XÓA HẾT LIÊN KẾT CŨ CỦA SUBJECT Ở CẢ HAI BẢNG NỐI
+        session.createNativeQuery("DELETE FROM teacher_subject WHERE subject_id = :sid")
+                .setParameter("sid", s.getId())
                 .executeUpdate();
-        // Thêm mới các liên kết teacher - subject
+
+        session.createNativeQuery("DELETE FROM student_subject WHERE subject_id = :sid")
+                .setParameter("sid", s.getId())
+                .executeUpdate();
+
+        // 👉 Thêm lại TEACHERs (khử trùng theo userId)
         if (s.getTeacherList() != null) {
+            // Dedupe
+            java.util.LinkedHashSet<Integer> teacherIds = new java.util.LinkedHashSet<>();
             for (Teacher t : s.getTeacherList()) {
-                String insSql = "INSERT INTO teacher_subject (teacher_id, subject_id) VALUES (:teacherId, :subjectId)";
-                session.createNativeQuery(insSql)
-                        .setParameter("teacherId", t.getUserId()) // hoặc t.getId() tùy mapping
-                        .setParameter("subjectId", s.getId())
+                if (t != null && t.getUserId() != null) teacherIds.add(t.getUserId());
+            }
+            for (Integer tid : teacherIds) {
+                session.createNativeQuery(
+                                "INSERT INTO teacher_subject (teacher_id, subject_id) VALUES (:tid, :sid)")
+                        .setParameter("tid", tid)              // Teacher.userId
+                        .setParameter("sid", s.getId())
                         .executeUpdate();
             }
         }
+        // 👉 Thêm lại STUDENTs (khử trùng theo userId)
         if (s.getStudentList() != null) {
-            for (Student su : s.getStudentList()) {
-                String insSql = "INSERT INTO student_subject (student_id, subject_id) VALUES (:studentId, :subjectId)";
-                session.createNativeQuery(insSql)
-                        .setParameter("studentId", su.getUserId()) // hoặc t.getId() tùy mapping
-                        .setParameter("subjectId", s.getId())
+            java.util.LinkedHashSet<Integer> studentIds = new java.util.LinkedHashSet<>();
+            for (Student st : s.getStudentList()) {
+                if (st != null && st.getUserId() != null) studentIds.add(st.getUserId());
+            }
+            for (Integer sid : studentIds) {
+                session.createNativeQuery(
+                                "INSERT INTO student_subject (student_id, subject_id) VALUES (:sid_, :subid)")
+                        .setParameter("sid_", sid)             // Student.userId
+                        .setParameter("subid", s.getId())
                         .executeUpdate();
             }
         }
+
         return s;
     }
 
 
-    @Transactional
     @Override
     public void deleteSubject(int id) {
         Session session = getCurrentSession();
@@ -154,7 +170,6 @@ public class SubjectRepositoryImpl implements SubjectRepository {
         }
         session.remove(s);
     }
-
 
 
     @Override

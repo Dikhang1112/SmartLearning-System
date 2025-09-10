@@ -1,22 +1,21 @@
 package com.smartStudy.controllers.api;
 
 import com.smartStudy.dto.UserSimpleDTO;
-import com.smartStudy.pojo.User;
+import com.smartStudy.pojo.*;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 import com.smartStudy.dto.ChapterDTO;
 import com.smartStudy.dto.ExcerciseDTO;
 import com.smartStudy.dto.SubjectDTO;
-import com.smartStudy.pojo.Chapter;
-import com.smartStudy.pojo.Exercise;
-import com.smartStudy.pojo.Subject;
 import com.smartStudy.services.ExcerciseService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,20 +71,69 @@ public class ApiExcerciseController {
 
     //=====  CREATE  =====
     @PostMapping("/exercises")
-    public ResponseEntity<?> create(@RequestBody Exercise body,
+    public ResponseEntity<?> create(@RequestBody Map<String, Object> req,
                                     @RequestParam(required = false) Integer chapterId) {
-        Exercise created = excerciseService.create(body, chapterId);
-        if (created == null) return ResponseEntity.badRequest().body("chapterId không hợp lệ");
-        return ResponseEntity.ok(toDto(created));
+        Exercise ex = new Exercise();
+
+        ex.setTitle((String) req.getOrDefault("title", ""));
+        ex.setDescription((String) req.getOrDefault("description", ""));
+        Object type = req.get("type");
+        if (type != null) ex.setType(String.valueOf(type));
+
+        // created_at (ISO 8601 từ frontend)
+        Object created = req.get("created_at");
+        if (created != null) {
+            try { ex.setCreatedAt(Date.from(Instant.parse(String.valueOf(created)))); }
+            catch (Exception ignored) { /* service sẽ fallback */ }
+        }
+
+        // teacherId -> createdBy.userId
+        Integer teacherId = parseIntObj(req.get("teacherId"));
+        if (teacherId != null) {
+            Teacher t = new Teacher();
+            t.setUserId(teacherId);
+            ex.setCreatedBy(t);
+        }
+
+        Exercise createdEx = excerciseService.create(ex, chapterId);
+        if (createdEx == null) return ResponseEntity.badRequest().body("chapterId không hợp lệ");
+        return ResponseEntity.ok(toDto(createdEx));
     }
 
     @PutMapping("/exercises/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id,
-                                    @RequestBody Exercise body,
-                                    @RequestParam(required = false, value = "id") Integer chapterId) {
-        Exercise updated = excerciseService.update(id, body, chapterId);
+                                    @RequestBody Map<String, Object> req,
+                                    @RequestParam(required = false, value = "chapterId") Integer chapterId) { // sửa value="chapterId"
+        Exercise ex = new Exercise();
+
+        if (req.containsKey("title"))       ex.setTitle((String) req.get("title"));
+        if (req.containsKey("description")) ex.setDescription((String) req.get("description"));
+        if (req.containsKey("type"))        ex.setType(String.valueOf(req.get("type")));
+
+        Object created = req.get("created_at");
+        if (created != null) {
+            try { ex.setCreatedAt(Date.from(Instant.parse(String.valueOf(created)))); }
+            catch (Exception ignored) { /* optional */ }
+        }
+
+        Integer teacherId = parseIntObj(req.get("teacherId"));
+        if (teacherId != null) {
+            Teacher t = new Teacher();
+            t.setUserId(teacherId);
+            ex.setCreatedBy(t);
+        }
+
+        Exercise updated = excerciseService.update(id, ex, chapterId);
         if (updated == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(toDto(updated));
+    }
+
+    // helper nhỏ trong controller
+    private Integer parseIntObj(Object o) {
+        if (o == null) return null;
+        if (o instanceof Number) return ((Number) o).intValue();
+        try { String s = String.valueOf(o); return s.isBlank() ? null : Integer.parseInt(s); }
+        catch (NumberFormatException e) { return null; }
     }
 
     // ====== DELETE ======

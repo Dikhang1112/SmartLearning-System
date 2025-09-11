@@ -73,9 +73,6 @@ public class Chapter implements Serializable {
     private Subject subjectId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "chapterId")
     @JsonIgnore
-    private List<Note> noteList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "chapterId")
-    @JsonIgnore
     private List<ChapterAttachment> chapterAttachmentList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "chapterId")
     @JsonIgnore
@@ -144,14 +141,6 @@ public class Chapter implements Serializable {
 
     public void setSubjectId(Subject subjectId) {
         this.subjectId = subjectId;
-    }
-
-    public List<Note> getNoteList() {
-        return noteList;
-    }
-
-    public void setNoteList(List<Note> noteList) {
-        this.noteList = noteList;
     }
 
     public List<ChapterAttachment> getChapterAttachmentList() {

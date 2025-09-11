@@ -3,7 +3,7 @@
  * Click nbfs://nbsp/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.smartStudy.configs;
-
+import io.github.cdimascio.dotenv.Dotenv;
 import com.smartStudy.filters.JwtFilter;
 import com.smartStudy.init.DataInitializer;
 import jakarta.servlet.Filter;
@@ -11,12 +11,36 @@ import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 /**
  * @author DUNG
  */
 public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    static {
+        try {
+            String envPath = ".env";
+            if (!Files.exists(Paths.get(envPath))) {
+                System.err.println("File .env không tồn tại tại: " + Paths.get(envPath).toAbsolutePath());
+            } else {
+                System.out.println("Tìm thấy file .env tại: " + Paths.get(envPath).toAbsolutePath());
+                Dotenv dotenv = Dotenv.configure()
+                        .directory("./") // Thư mục gốc
+                        .ignoreIfMissing()
+                        .load();
+                dotenv.entries().forEach(entry -> {
+                    System.setProperty(entry.getKey(), entry.getValue());
+                    System.out.println("Đã tải biến môi trường: " + entry.getKey() + "=" + entry.getValue());
+                });
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tải file .env: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected Class<?>[] getRootConfigClasses() {

@@ -142,12 +142,8 @@ const Login = ({ onLoginSuccess }) => {
             setSuccess('Đăng nhập bằng Google thành công!');
             setError('');
             if (onLoginSuccess) onLoginSuccess(); // Tắt modal khi login thành công
-            if (userInfo.role === "STUDENT") {
-                await initializeChapterProgress(userInfo.id);
-                nav('/studentDashboard');
-            } else if (userInfo.role === "TEACHER") {
-                nav('/teacherDashboard');
-            }
+            await initializeChapterProgress(userInfo.id);
+            nav('/studentDashboard');
         } catch (err) {
             console.error("Profile fetch error after Google login: ", err); // Log lỗi gọi profile
             setError('Có lỗi xảy ra sau khi đăng nhập bằng Google. Vui lòng thử lại.');

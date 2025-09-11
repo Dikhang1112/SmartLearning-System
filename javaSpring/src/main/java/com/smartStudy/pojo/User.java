@@ -93,10 +93,6 @@ public class User implements Serializable {
     @Transient
     @JsonIgnore
     private MultipartFile file;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    @JsonIgnore
-    private List<Note> noteList;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     @JsonIgnore
     private Student student;
@@ -146,13 +142,6 @@ public class User implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public List<Note> getNoteList() {
-        return noteList;
-    }
-
-    public void setNoteList(List<Note> noteList) {
-        this.noteList = noteList;
-    }
 
     public Student getStudent() {
         return student;

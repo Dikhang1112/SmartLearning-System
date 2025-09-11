@@ -262,3 +262,10 @@ yarn-error.log*
 coverage/
 
 javaSpring/src/main/resources/cccd-gcv.json
+
+# env files
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.sample

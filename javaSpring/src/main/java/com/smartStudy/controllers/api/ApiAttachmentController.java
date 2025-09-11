@@ -4,6 +4,7 @@ import com.smartStudy.pojo.ChapterAttachment;
 import com.smartStudy.services.AttachmentService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ApiAttachmentController {
 
+
+    @Autowired
     private final AttachmentService attachmentService;
 
     @PostMapping(value = "/chapters/{chapterId}/attachments", consumes = "multipart/form-data")

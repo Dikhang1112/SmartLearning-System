@@ -33,7 +33,7 @@ CREATE TABLE `chapter` (
   PRIMARY KEY (`id`),
   KEY `idx_chapter_subject` (`subject_id`,`order_index`),
   CONSTRAINT `chapter_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +42,7 @@ CREATE TABLE `chapter` (
 
 LOCK TABLES `chapter` WRITE;
 /*!40000 ALTER TABLE `chapter` DISABLE KEYS */;
-INSERT INTO `chapter` VALUES (1,1,'Tập hợp và mệnh đề','Mệnh đề và tập hợp trong toán học',1,'2025-08-09 15:58:54','2025-08-11 20:56:13'),(2,2,'Lịch sử Đại Việt','Lịch sử Việt Nam thời phong kiến',1,'2025-08-18 14:45:19','2025-08-23 16:32:06');
+INSERT INTO `chapter` VALUES (5,23,'Mệnh đề và tập hợp','Đây là nội dung tiên quyết của Toán 10',1,NULL,NULL);
 /*!40000 ALTER TABLE `chapter` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -65,7 +65,7 @@ CREATE TABLE `chapter_attachment` (
   KEY `chapter_attachment` (`chapter_id`),
   CONSTRAINT `chapter_attachment` FOREIGN KEY (`chapter_id`) REFERENCES `chapter` (`id`) ON DELETE CASCADE,
   CONSTRAINT `chapter_attachment_chk_1` CHECK ((`type` in (_utf8mb4'SUMMARY',_utf8mb4'CONTENT')))
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -74,7 +74,7 @@ CREATE TABLE `chapter_attachment` (
 
 LOCK TABLES `chapter_attachment` WRITE;
 /*!40000 ALTER TABLE `chapter_attachment` DISABLE KEYS */;
-INSERT INTO `chapter_attachment` VALUES (1,1,'CONTENT','1.TapHop.pdf','https://res.cloudinary.com/dao8z029z/raw/upload/v1754921973/chapters/1/chapters/1/1_TapHop-1754921969681','2025-08-11 21:19:35','pdf');
+INSERT INTO `chapter_attachment` VALUES (15,5,'CONTENT','1.TapHop.pdf','https://res.cloudinary.com/dao8z029z/raw/upload/v1757508425/chapters/5/chapters/5/1_TapHop-1757508410129','2025-09-10 19:47:06','pdf');
 /*!40000 ALTER TABLE `chapter_attachment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -97,7 +97,7 @@ CREATE TABLE `chapter_progress` (
   KEY `progress_chapter_id` (`chapter_id`),
   CONSTRAINT `chapter_progress_student` FOREIGN KEY (`student_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `progress_chapter_id` FOREIGN KEY (`chapter_id`) REFERENCES `chapter` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +106,7 @@ CREATE TABLE `chapter_progress` (
 
 LOCK TABLES `chapter_progress` WRITE;
 /*!40000 ALTER TABLE `chapter_progress` DISABLE KEYS */;
-INSERT INTO `chapter_progress` VALUES (3,64,1,50,10.00,'2025-09-07 16:36:09'),(4,64,2,0,0.00,'2025-09-02 21:18:54');
+INSERT INTO `chapter_progress` VALUES (7,75,5,0,0.00,'2025-09-11 15:41:56'),(8,72,5,0,0.00,'2025-09-10 19:44:38');
 /*!40000 ALTER TABLE `chapter_progress` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,7 +123,7 @@ CREATE TABLE `class` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -132,7 +132,7 @@ CREATE TABLE `class` (
 
 LOCK TABLES `class` WRITE;
 /*!40000 ALTER TABLE `class` DISABLE KEYS */;
-INSERT INTO `class` VALUES (1,'10A2','2025-08-04 14:38:34','2025-09-03 15:17:34'),(5,'10A1','2025-09-07 18:05:32','2025-09-07 18:05:32');
+INSERT INTO `class` VALUES (6,'10A1','2025-09-10 18:14:46','2025-09-10 20:49:00'),(7,'10A2','2025-09-10 19:35:01','2025-09-10 19:35:01');
 /*!40000 ALTER TABLE `class` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -160,7 +160,7 @@ CREATE TABLE `essay_response` (
 
 LOCK TABLES `essay_response` WRITE;
 /*!40000 ALTER TABLE `essay_response` DISABLE KEYS */;
-INSERT INTO `essay_response` VALUES (74,3,'send mail di'),(74,4,'ok ban'),(75,3,'Gui lan 2 ne'),(75,4,'ok ban');
+INSERT INTO `essay_response` VALUES (81,11,'Mệnh đề là mệnh đề chứ gì');
 /*!40000 ALTER TABLE `essay_response` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -183,8 +183,8 @@ CREATE TABLE `exercise` (
   KEY `excercise_chapter` (`chapter_id`),
   KEY `fk_exercise_created_by` (`created_by`),
   CONSTRAINT `excercise_chapter` FOREIGN KEY (`chapter_id`) REFERENCES `chapter` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_exercise_created_by` FOREIGN KEY (`created_by`) REFERENCES `teacher` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `fk_exercise_created_by` FOREIGN KEY (`created_by`) REFERENCES `teacher` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -193,7 +193,7 @@ CREATE TABLE `exercise` (
 
 LOCK TABLES `exercise` WRITE;
 /*!40000 ALTER TABLE `exercise` DISABLE KEYS */;
-INSERT INTO `exercise` VALUES (1,1,'Bài tập trắc nghiệm về mệnh đề và tập hợp','Chọn câu trả lời đúng nhất cho mỗi câu nhé','MCQ','2025-08-11 13:14:40',2),(3,1,'Bài tập tự luận về mệnh đề và tập hợp','Khó lắm á nha','ESSAY','2025-08-11 13:14:40',2);
+INSERT INTO `exercise` VALUES (4,5,'Trắc nghiệm mệnh đề và tập hợp bla bla','Bài tập trắc nghiệm cho mệnh đề và tập hợp','MCQ','2025-09-10 20:54:21',69),(7,5,'Bài tập về mệnh đề và tập hợp','','ESSAY','2025-09-10 20:54:21',69);
 /*!40000 ALTER TABLE `exercise` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -212,7 +212,7 @@ CREATE TABLE `exercise_answer` (
   PRIMARY KEY (`id`),
   KEY `exercise_answers_question` (`question_id`),
   CONSTRAINT `exercise_answers_question` FOREIGN KEY (`question_id`) REFERENCES `exercise_question` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -221,7 +221,7 @@ CREATE TABLE `exercise_answer` (
 
 LOCK TABLES `exercise_answer` WRITE;
 /*!40000 ALTER TABLE `exercise_answer` DISABLE KEYS */;
-INSERT INTO `exercise_answer` VALUES (1,1,'Tam giác đều là tam giác có ba cạnh bằng nhau.',0),(4,1,'Bạn học giỏi quá !',1),(5,2,'12 là số tự nhiên lẻ',1),(7,2,'Các bạn có chăm học không',0),(10,1,'okok',0),(12,1,'Bạn này trai hay gái',0),(13,2,'Anh này đẹp trai quá',0);
+INSERT INTO `exercise_answer` VALUES (14,7,'1 có phải là số nguyên tố không ?',0),(15,7,'Các bạn rất chăm học',1),(16,7,'2 + 2 bằng mấy',0),(17,8,'18 chia hết cho 9',0),(18,8,'3n chia hết cho 9 , n là số tự nhiên',1),(19,8,'2109 là số nguyên tố',0),(20,8,'Nếu một số chia hết cho 18 thì số đó chia hết cho 9',0);
 /*!40000 ALTER TABLE `exercise_answer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -241,7 +241,7 @@ CREATE TABLE `exercise_question` (
   PRIMARY KEY (`id`),
   KEY `excercise_question_id` (`exercise_id`),
   CONSTRAINT `excercise_question_id` FOREIGN KEY (`exercise_id`) REFERENCES `exercise` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -250,7 +250,7 @@ CREATE TABLE `exercise_question` (
 
 LOCK TABLES `exercise_question` WRITE;
 /*!40000 ALTER TABLE `exercise_question` DISABLE KEYS */;
-INSERT INTO `exercise_question` VALUES (1,1,1,' Câu nào sau đây không là mệnh đề?','Vì “Bạn học giỏi quá!” là câu cảm thán không có khẳng định đúng hoặc sai'),(2,1,2,'Trong các câu sau đây câu nào là mệnh đề đúng ?','\"12  là số tự nhiên lẻ\" là mệnh đề vì nó khẳng định'),(3,3,1,'Mệnh đề là gì ?','Mệnh đề được hiểu là một câu khẳng định có thể xác định được tính đúng, sai của nó.'),(4,3,2,'Tập hợp là gì ?','Tập hợp là dãy hiển thị mệnh đề');
+INSERT INTO `exercise_question` VALUES (7,4,1,'Trong các câu sau, câu nào là mệnh đề ?','Câu B á'),(8,4,2,'Câu nào là mệnh đề chứa biến','Câu B đó'),(11,7,1,'Mệnh đề là gì ??','');
 /*!40000 ALTER TABLE `exercise_question` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -277,7 +277,7 @@ CREATE TABLE `exercise_submission` (
   KEY `idx_es_status` (`status`),
   CONSTRAINT `exercise_submissions` FOREIGN KEY (`exercise_id`) REFERENCES `exercise` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `exercise_submissions_student` FOREIGN KEY (`student_id`) REFERENCES `student` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -286,7 +286,7 @@ CREATE TABLE `exercise_submission` (
 
 LOCK TABLES `exercise_submission` WRITE;
 /*!40000 ALTER TABLE `exercise_submission` DISABLE KEYS */;
-INSERT INTO `exercise_submission` VALUES (74,3,64,'GRADED','2025-09-06 15:27:04',10.00,'Good job em'),(75,3,64,'GRADED','2025-09-06 15:59:16',10.00,'Ok lun');
+INSERT INTO `exercise_submission` VALUES (81,7,75,'GRADED','2025-09-11 15:41:55',5.00,'Ngu qua');
 /*!40000 ALTER TABLE `exercise_submission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -320,37 +320,6 @@ LOCK TABLES `mcq_response` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `note`
---
-
-DROP TABLE IF EXISTS `note`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `note` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `chapter_id` int NOT NULL,
-  `content` varchar(500) NOT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_notes_chapter` (`chapter_id`),
-  KEY `notes_user` (`user_id`),
-  CONSTRAINT `notes_chapter` FOREIGN KEY (`chapter_id`) REFERENCES `chapter` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `notes_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `note`
---
-
-LOCK TABLES `note` WRITE;
-/*!40000 ALTER TABLE `note` DISABLE KEYS */;
-/*!40000 ALTER TABLE `note` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `notification`
 --
 
@@ -373,7 +342,7 @@ CREATE TABLE `notification` (
   KEY `idx_notification_sent_at` (`sent_at`),
   CONSTRAINT `fk_notification_student` FOREIGN KEY (`student_id`) REFERENCES `student` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_notification_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `teacher` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -382,7 +351,7 @@ CREATE TABLE `notification` (
 
 LOCK TABLES `notification` WRITE;
 /*!40000 ALTER TABLE `notification` DISABLE KEYS */;
-INSERT INTO `notification` VALUES (25,64,2,'EXERCISE','Học sinh đã nộp bài tập Bài tập trắc nghiệm về mệnh đề và tập hợp','Mã bài nộp #68\nVui lòng vào hệ thống để xem chi tiết và chấm điểm.',1,'2025-09-06 15:14:39'),(32,64,2,'EXERCISE','Học sinh đã nộp bài tập Bài tập tự luận về mệnh đề và tập hợp','Mã bài nộp #75\nVui lòng vào hệ thống để xem chi tiết và chấm điểm.',1,'2025-09-06 15:59:17'),(33,64,2,'SUBMISSION','Bài đã được chấm: Tập hợp và mệnh đề','Mã bài nộp #74 | Điểm: 10 | Nhận xét: Good job em',1,'2025-09-06 16:00:14'),(34,64,2,'SUBMISSION','Bài đã được chấm: Tập hợp và mệnh đề','Mã bài nộp #75 | Điểm: 10 | Nhận xét: Ok lun',1,'2025-09-06 16:08:44');
+INSERT INTO `notification` VALUES (35,75,69,'SUBMISSION','Bài đã được chấm: Mệnh đề và tập hợp','Mã bài nộp #77 | Điểm: 10 | Nhận xét: Giỏi lắm em',1,'2025-09-10 20:11:33'),(36,75,69,'EXERCISE','Học sinh đã nộp bài tập Bài tập về mệnh đề và tập hợp','Mã bài nộp #80\nVui lòng vào hệ thống để xem chi tiết và chấm điểm.',1,'2025-09-10 20:39:44'),(37,75,69,'EXERCISE','Học sinh đã nộp bài tập Bài tập về mệnh đề và tập hợp','Mã bài nộp #81\nVui lòng vào hệ thống để xem chi tiết và chấm điểm.',0,'2025-09-11 15:41:56'),(38,75,69,'SUBMISSION','Bài đã được chấm: Mệnh đề và tập hợp','Mã bài nộp #81 | Điểm: 5 | Nhận xét: Ngu qua',0,'2025-09-11 16:08:50');
 /*!40000 ALTER TABLE `notification` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -406,7 +375,7 @@ CREATE TABLE `student` (
 
 LOCK TABLES `student` WRITE;
 /*!40000 ALTER TABLE `student` DISABLE KEYS */;
-INSERT INTO `student` VALUES (64);
+INSERT INTO `student` VALUES (70),(71),(72),(75);
 /*!40000 ALTER TABLE `student` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -434,7 +403,7 @@ CREATE TABLE `student_class` (
 
 LOCK TABLES `student_class` WRITE;
 /*!40000 ALTER TABLE `student_class` DISABLE KEYS */;
-INSERT INTO `student_class` VALUES (64,1),(64,5);
+INSERT INTO `student_class` VALUES (70,6),(71,6),(72,6),(75,6),(70,7),(71,7),(72,7),(75,7);
 /*!40000 ALTER TABLE `student_class` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -460,7 +429,7 @@ CREATE TABLE `student_schedule` (
   KEY `idx_student_date` (`student_id`,`study_date`),
   CONSTRAINT `fk_schedule_student` FOREIGN KEY (`student_id`) REFERENCES `student` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_schedule_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -469,7 +438,7 @@ CREATE TABLE `student_schedule` (
 
 LOCK TABLES `student_schedule` WRITE;
 /*!40000 ALTER TABLE `student_schedule` DISABLE KEYS */;
-INSERT INTO `student_schedule` VALUES (8,64,2,'2025-09-06','10:00:00','12:00:00','Ok lun','2025-09-01 03:20:20','2025-09-05 03:46:03');
+INSERT INTO `student_schedule` VALUES (12,75,23,'2025-09-12','14:30:00','16:30:00','Ôn chương 1','2025-09-10 14:03:32','2025-09-11 09:10:18');
 /*!40000 ALTER TABLE `student_schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -496,7 +465,7 @@ CREATE TABLE `student_subject` (
 
 LOCK TABLES `student_subject` WRITE;
 /*!40000 ALTER TABLE `student_subject` DISABLE KEYS */;
-INSERT INTO `student_subject` VALUES (64,1),(64,2);
+INSERT INTO `student_subject` VALUES (70,23),(71,23),(72,23),(75,23),(70,24),(71,24),(72,24),(75,24),(70,25),(71,25),(72,25),(75,25),(70,26),(71,26),(72,26),(75,26);
 /*!40000 ALTER TABLE `student_subject` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -515,7 +484,7 @@ CREATE TABLE `subject` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -524,7 +493,7 @@ CREATE TABLE `subject` (
 
 LOCK TABLES `subject` WRITE;
 /*!40000 ALTER TABLE `subject` DISABLE KEYS */;
-INSERT INTO `subject` VALUES (1,'Toán 10','https://res.cloudinary.com/dao8z029z/image/upload/v1754729794/ddlwmbnul6f9d5tmpnhb.png','Học về hàm số, đồ thị và xác suất','2025-08-09 15:56:35','2025-08-09 15:58:19'),(2,'History 10','https://res.cloudinary.com/dao8z029z/image/upload/v1754551596/b4wkjowtqwvklcrgk4bp.jpg','Learn about history of VietNam and World','2025-07-24 10:18:52','2025-08-27 23:53:23');
+INSERT INTO `subject` VALUES (23,'Toán 10','https://res.cloudinary.com/dao8z029z/image/upload/v1757502838/tir54kiehmfcsbsl7oqp.png','Môn học gồm các chương hàm số, tập hợp,xác suất...','2025-09-10 18:13:59','2025-09-10 20:17:32'),(24,'Lịch sử 10','https://res.cloudinary.com/dao8z029z/image/upload/v1757507345/piarux82vdzwphbnmwcj.jpg','Học về lịch sử Việt Nam','2025-09-10 19:29:06','2025-09-10 19:29:06'),(25,'Sinh học 10 ','https://res.cloudinary.com/dao8z029z/image/upload/v1757507546/fvzl4apblbqohspyckhx.jpg','Học về động vật, thiên nhiên hoang dã','2025-09-10 19:31:47','2025-09-10 19:32:27'),(26,'Toán 10','https://res.cloudinary.com/dao8z029z/image/upload/v1757507652/v4feckzwglwevoacq9bs.png','Cũng là toán mà giáo viên khác dạy','2025-09-10 19:34:13','2025-09-10 19:41:10');
 /*!40000 ALTER TABLE `subject` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -548,7 +517,7 @@ CREATE TABLE `teacher` (
 
 LOCK TABLES `teacher` WRITE;
 /*!40000 ALTER TABLE `teacher` DISABLE KEYS */;
-INSERT INTO `teacher` VALUES (2),(65);
+INSERT INTO `teacher` VALUES (69),(73),(74);
 /*!40000 ALTER TABLE `teacher` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -578,7 +547,6 @@ CREATE TABLE `teacher_assignment` (
 
 LOCK TABLES `teacher_assignment` WRITE;
 /*!40000 ALTER TABLE `teacher_assignment` DISABLE KEYS */;
-INSERT INTO `teacher_assignment` VALUES (2,1,1);
 /*!40000 ALTER TABLE `teacher_assignment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -605,7 +573,7 @@ CREATE TABLE `teacher_class` (
 
 LOCK TABLES `teacher_class` WRITE;
 /*!40000 ALTER TABLE `teacher_class` DISABLE KEYS */;
-INSERT INTO `teacher_class` VALUES (2,1),(2,5);
+INSERT INTO `teacher_class` VALUES (69,6),(73,6),(73,7),(74,7);
 /*!40000 ALTER TABLE `teacher_class` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -632,7 +600,7 @@ CREATE TABLE `teacher_subject` (
 
 LOCK TABLES `teacher_subject` WRITE;
 /*!40000 ALTER TABLE `teacher_subject` DISABLE KEYS */;
-INSERT INTO `teacher_subject` VALUES (2,1),(2,2);
+INSERT INTO `teacher_subject` VALUES (69,23),(69,24),(73,24),(69,25),(73,25),(69,26);
 /*!40000 ALTER TABLE `teacher_subject` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -657,7 +625,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   KEY `idx_user_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -666,7 +634,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin@gmail.com','$2a$10$Pq5TmzY.2kTqksPd2uto9uGY6W6PwNYYG8jlCwbqCqRKUmVgcj9/u','Admin','ADMIN','https://res.cloudinary.com/dao8z029z/image/upload/v1753113935/vvgqkeiktwaj38f1euk8.png','2025-07-21 23:05:37','2025-07-21 23:07:26',NULL,NULL),(2,'2251012075khang@ou.edu.vn','$2a$10$M3TFfS5rpMcWF0wxSrmGX.qziM02VMkXCI9biQHlpFK0bN5U6wBvC','Teacher1','TEACHER','https://res.cloudinary.com/dao8z029z/image/upload/v1756482416/hqr5lvudkkfwrcrkntbj.jpg','2025-07-22 14:26:39','2025-09-02 21:27:07',NULL,NULL),(64,'duykhanggt5@gmail.com','$2a$10$NPkWIiHIq976U1P8/BM1MemRTxz6L5zvGX5KboNA2Xha/dSCl/GQ6','Duy Khang','STUDENT','https://lh3.googleusercontent.com/a/ACg8ocJYMFXJyWbsLAIpfZ6SmY2oUt40VN0p22OGsxFCCCtV_qfQSt0=s96-c','2025-08-25 16:56:29','2025-09-07 17:40:48',NULL,NULL),(65,'poticutee@gmail.com','$2a$10$lpV7dtWaKciYynwfEfSEBeZe1VXQBnqPFEBfh71CCZztrtrzS6MZC','Teacher2','TEACHER','https://res.cloudinary.com/dao8z029z/image/upload/v1756882260/vmishl78lxuf3bhuva85.jpg','2025-09-03 13:51:02','2025-09-03 13:51:02',NULL,NULL);
+INSERT INTO `user` VALUES (68,'admin@gmail.com','$2a$10$5X9gmAQebD7kSBapMkrt7e5k3Tggf2aSJeJM/LyC1DmVtRhaFaFZ.','Administrator','ADMIN',NULL,'2025-09-09 19:33:01','2025-09-09 19:33:01',NULL,NULL),(69,'2251012075khang@ou.edu.vn','$2a$10$23NCJwLehzve9tVaa81qjuM1ZRj/wQ9ReTqIkShxWOgiDqN9xndD6','Khang Teacher','TEACHER','https://res.cloudinary.com/dao8z029z/image/upload/v1757490551/s5ye1bpund76nlawy7nc.jpg','2025-09-10 14:49:13','2025-09-10 14:49:13',NULL,NULL),(70,'poticutee@gmail.com','$2a$10$W/I7txCL8SmkGqSuokNcjulI3e2VUcZKxCd9r.h2ZZJvKmLAGffbC','Khang Student','STUDENT','https://res.cloudinary.com/dao8z029z/image/upload/v1757490593/kdmbbsoh2z4gnrbxaje7.jpg','2025-09-10 14:49:54','2025-09-10 14:49:54',NULL,NULL),(71,'student1@gmail.com','$2a$10$jC6LYyxvugk2DMmzTbtea.dfw6aCl7EBGYLOMyyI.W.T57Ide.OmS','Student1','STUDENT','https://res.cloudinary.com/dao8z029z/image/upload/v1757490669/fo0nsselzhukqg7kiz3s.jpg','2025-09-10 14:51:10','2025-09-10 14:51:10',NULL,NULL),(72,'student2@gmail.com','$2a$10$k6/efOujOYViARm7OfB7Q.T2GDPwhrIJRwvkPzGgEXa.mJj2o5u.2','Student2','STUDENT','https://res.cloudinary.com/dao8z029z/image/upload/v1757490709/u8immvjrghdllg4u5w2m.jpg','2025-09-10 14:51:51','2025-09-10 14:51:51',NULL,NULL),(73,'teacher2@gmail.com','$2a$10$BLqHp2qlau8UVoO674v6GuvV.nY2zcQc.JdkIeQPpi50mmiCNfeS6','Teacher 2','TEACHER','https://res.cloudinary.com/dao8z029z/image/upload/v1757490799/knozszeqh1cfifiwi0fd.png','2025-09-10 14:53:21','2025-09-10 14:53:21',NULL,NULL),(74,'teacher1@gmail.com','$2a$10$Fd4/bwKEjxIPxGvBCV3YKu36Xq63JaEy7de8m7dpGrV1fAem/u/ZK','Teacher 1','TEACHER','https://res.cloudinary.com/dao8z029z/image/upload/v1757490855/pub0jnz2hccy5e39rzaa.png','2025-09-10 14:54:17','2025-09-10 14:54:17',NULL,NULL),(75,'duykhanggt5@gmail.com','$2a$10$Copew1pCL/llFOZhAa19fua6MbyqBn/RdA1AVpren62LKCYrbyzX.','Duy Khang','STUDENT','https://lh3.googleusercontent.com/a/ACg8ocJYMFXJyWbsLAIpfZ6SmY2oUt40VN0p22OGsxFCCCtV_qfQSt0=s96-c','2025-09-10 14:58:35','2025-09-11 16:10:08',NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -679,4 +647,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-07 20:15:35
+-- Dump completed on 2025-09-11 19:17:29

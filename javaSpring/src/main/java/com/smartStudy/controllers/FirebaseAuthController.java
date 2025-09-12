@@ -4,13 +4,14 @@ import com.smartStudy.pojo.User;
 import com.smartStudy.services.FirebaseTokenService;
 import com.smartStudy.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/firebase")
@@ -18,14 +19,10 @@ import java.util.Map;
 @CrossOrigin // hoặc cấu hình CORS global
 public class FirebaseAuthController {
     @Autowired
-    private final FirebaseTokenService tokenService;
+    private  FirebaseTokenService tokenService;
     @Autowired
-    private final UserService userService;
+    private  UserService userService;
 
-    /**
-     * Đầu vào: người dùng đã đăng nhập hệ thống của bạn (JWT hợp lệ).
-     * Đầu ra: Firebase Custom Token để frontend signInWithCustomToken().
-     */
     @GetMapping("/custom-token")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCustomToken(Authentication auth) {
@@ -41,7 +38,7 @@ public class FirebaseAuthController {
         }
 
         String uid = String.valueOf(u.getId()); // uid Firebase = id nội bộ
-           String roles = u.getRole();
+        String roles = u.getRole();
         try {
             String token = tokenService.createCustomToken(uid, Map.of(
                     "email", u.getEmail(),

@@ -64,7 +64,6 @@ public class UserRepositoryImpl implements UserRepository {
         int start = (page - 1) * PAGE_SIZE;
         query.setFirstResult(start);
         query.setMaxResults(PAGE_SIZE);
-
         return query.getResultList();
     }
 

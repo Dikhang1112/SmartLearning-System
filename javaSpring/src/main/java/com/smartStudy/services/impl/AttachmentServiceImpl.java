@@ -26,8 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AttachmentServiceImpl implements AttachmentService {
     @Autowired
-    private final Cloudinary cloudinary;
-
+    private  Cloudinary cloudinary;
     @Autowired
     private AttachmentRepository attachmentRepository;
     @Autowired

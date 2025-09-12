@@ -90,7 +90,7 @@ public class UserController {
             return "redirect:/users";
         } else { // Thêm mới
             if (userService.exitsByEmail(user.getEmail())) {
-                model.addAttribute("emailError", "Email already exists, please choose another email!");
+                model.addAttribute("emailError", "Email đã tồn tại, hãy nhập email mới");
                 model.addAttribute("user", user);
                 return "editUser";
             }

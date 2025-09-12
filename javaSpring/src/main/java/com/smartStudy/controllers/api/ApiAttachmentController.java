@@ -18,9 +18,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ApiAttachmentController {
 
-
     @Autowired
-    private final AttachmentService attachmentService;
+    private AttachmentService attachmentService;
 
     @PostMapping(value = "/chapters/{chapterId}/attachments", consumes = "multipart/form-data")
     public ResponseEntity<Map<String, Object>> upload(

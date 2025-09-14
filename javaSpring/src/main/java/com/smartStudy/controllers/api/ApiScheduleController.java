@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/api")
 @Validated
 public class ApiScheduleController {
-
     @Autowired
     private ScheduleService scheduleService;
 
@@ -70,7 +69,7 @@ public class ApiScheduleController {
     static class ScheduleCreateUpdateReq {
         public Integer studentId;   // create cần
         public Integer subjectId;
-        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd")
+            @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd")
         public java.time.LocalDate studyDate;
         @com.fasterxml.jackson.annotation.JsonFormat(pattern = "HH:mm[:ss]")
         public java.time.LocalTime startTime;

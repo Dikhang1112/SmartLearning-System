@@ -36,7 +36,7 @@ import java.util.Date;
     @NamedQuery(name = "Notification.findByTitle", query = "SELECT n FROM Notification n WHERE n.title = :title"),
     @NamedQuery(name = "Notification.findByIsReaded", query = "SELECT n FROM Notification n WHERE n.isReaded = :isReaded"),
     @NamedQuery(name = "Notification.findBySentAt", query = "SELECT n FROM Notification n WHERE n.sentAt = :sentAt")})
-public class Notification implements Serializable {
+public class    Notification implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id

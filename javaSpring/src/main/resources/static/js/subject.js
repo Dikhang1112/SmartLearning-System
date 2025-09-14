@@ -12,7 +12,7 @@ function showToast(msg, isSuccess = true) {
 
 
 function deleteSubject(endpoint, id) {
-    if (confirm("If you want to delete this subject, all related information will be lost. Do you still want to delete?") === true) {
+    if (confirm("Dữ liệu liên quan của môn học cũng sẽ bị xóa, bạn chắc chắn xóa ??") === true) {
         fetch(endpoint + id, { method: "delete" })
         .then(res => {
             if (res.status === 204 || res.status === 200) {

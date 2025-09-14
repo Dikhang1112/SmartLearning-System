@@ -28,7 +28,7 @@ public class StudyReminderScheduler {
     /**
      * Chạy mỗi ngày lúc 7:00 sáng (giờ VN).
      */
-    @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(cron = "0 14 16 * * *", zone = "Asia/Ho_Chi_Minh")
     public void runDailyIfHasSchedules() {
         LocalDate today = LocalDate.now(VN);
         List<Integer> studentIds = scheduleService.findStudentIdsByDate(today);

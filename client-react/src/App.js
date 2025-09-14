@@ -1,7 +1,7 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useReducer, useEffect } from 'react';
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { CookiesProvider } from 'react-cookie';
 import Header from './components/layouts/Header';
 import Welcome from './components/layouts/Welcome';
@@ -24,8 +24,49 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Profile from './components/Profile';
 
+function AppContent({ user }) {
+  const location = useLocation();
+  const shouldShowChatbot =
+    user?.role === "STUDENT" &&
+    !location.pathname.startsWith("/message") &&
+    !location.pathname.startsWith("/studyPlans");
+
+  return (
+    <>
+      <Header />
+      <Sidebar />
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/studentDashBoard/" element={<StudentDashboard />} />
+        <Route path="/teacherDashBoard/" element={<TeacherDashboard />} />
+        <Route path="/chapters/:subjectId" element={<Chapter />} />
+        <Route path="/chapters/:subjectId/section/:chapterId" element={<ChapterSection />} />
+        <Route path="/studyPlans/:studentId" element={<StudyPlans />} />
+        <Route path="/submission" element={<Submission />} />
+        <Route path="/submission/chapters" element={<SubmissionChapter />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/message/:userId" element={<Message />} />
+        <Route path="/chatAI/:userId" element={<ChatAI />} />
+      </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      {shouldShowChatbot && <ChatbotAI />}
+    </>
+  );
+}
+
 function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
+
   useEffect(() => {
     const init = async () => {
       let token = localStorage.getItem("token") || cookie.load("token");
@@ -39,9 +80,9 @@ function App() {
             name: res.data.name,
             role: res.data.role,
             avatar: res.data.avatar
-          }
+          };
           dispatch({
-            type: "login" || "loginGoogle",
+            type: "login",
             payload: currentUser
           });
         } catch (err) {
@@ -52,40 +93,15 @@ function App() {
       }
     };
     init();
-  }, []); // ĐỂ MẢNG RỖNG
+  }, []);
+
   return (
     <MyUserContext.Provider value={user}>
       <CookiesProvider>
         <MyUserDispatchContext.Provider value={dispatch}>
           <SidebarProvider>
             <BrowserRouter>
-              <Header />
-              <Sidebar />
-              <Routes>
-                <Route path="/" element={<Welcome />} />
-                <Route path="/studentDashBoard/" element={<StudentDashboard />} />
-                <Route path="/teacherDashBoard/" element={<TeacherDashboard />} />
-                <Route path="/chapters/:subjectId" element={<Chapter />} />
-                <Route path="/chapters/:subjectId/section/:chapterId" element={<ChapterSection />} />
-                <Route path="/studyPlans/:studentId" element={<StudyPlans />} />
-                <Route path="/submission" element={<Submission />} />
-                <Route path="/submission/chapters" element={<SubmissionChapter />} />
-                <Route path="/profile/:userId" element={<Profile />} />
-                <Route path="/message/:userId" element={< Message />} />
-                <Route path="/chatAI/:userId" element={< ChatAI />} />
-              </Routes>
-              <ToastContainer // Toast toàn cục
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={true}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-              />
-              {user && user.role === "STUDENT" && <ChatbotAI />}
+              <AppContent user={user} />
             </BrowserRouter>
           </SidebarProvider>
         </MyUserDispatchContext.Provider>

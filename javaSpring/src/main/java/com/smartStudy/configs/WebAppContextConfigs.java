@@ -4,11 +4,16 @@
  */
 package com.smartStudy.configs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
@@ -17,6 +22,10 @@ import org.springframework.web.servlet.config.annotation.DefaultServletHandlerCo
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author AN515-57
@@ -61,5 +70,33 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
     @Bean
     public StandardServletMultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
+    }
+    @Bean
+    public ObjectMapper jacksonObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        // Xuất ngày dưới dạng chuỗi ISO thay vì số epoch
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
+
+    @Bean
+    public MappingJackson2HttpMessageConverter jacksonMessageConverter(ObjectMapper mapper) {
+        MappingJackson2HttpMessageConverter c = new MappingJackson2HttpMessageConverter(mapper);
+        c.setDefaultCharset(StandardCharsets.UTF_8);
+        return c;
+    }
+
+    @Override
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        // Loại bỏ mọi Jackson converter cũ (tránh dùng nhầm ObjectMapper mặc định)
+        for (Iterator<HttpMessageConverter<?>> it = converters.iterator(); it.hasNext(); ) {
+            HttpMessageConverter<?> conv = it.next();
+            if (conv instanceof MappingJackson2HttpMessageConverter) {
+                it.remove();
+            }
+        }
+        // Thêm converter của mình vào đầu danh sách
+        converters.add(0, jacksonMessageConverter(jacksonObjectMapper()));
     }
 }

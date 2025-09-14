@@ -1,10 +1,11 @@
 package com.smartStudy.dto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.smartStudy.pojo.StudentSchedule;
-
 import  java.time.*;
 
 public class ScheduleDTO {
     private Integer id;
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate studyDate;
     private LocalTime startTime;
     private LocalTime endTime;
